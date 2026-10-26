@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistem Pakar Diagnosis DBD (CBR)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Sistem Pakar Diagnosis Demam Berdarah Dengue</h1>
+        <p>Case Based Reasoning — untuk pembelajaran, bukan diagnosis medis final</p>
+    </header>
+
+    <main>
+        <section id="p1" class="card">
+            <h2>1. Identitas pasien</h2>
+            <label class="f">Nama pasien
+                <input type="text" id="nama" autocomplete="off">
+            </label>
+            <label class="f">Jenis kelamin
+                <select id="jk">
+                    <option value="">— pilih —</option>
+                    <option>Laki-laki</option>
+                    <option>Perempuan</option>
+                </select>
+            </label>
+            <label class="f">Umur (tahun)
+                <input type="number" id="umur" min="0" max="120">
+            </label>
+            <p class="note">Umur dan jenis kelamin hanya ditampilkan di hasil dan tidak masuk perhitungan.</p>
+            <p id="e1" class="err"></p>
+            <div class="row">
+                <button class="p" id="lanjut">Lanjut</button>
+            </div>
+        </section>
+
+        <section id="p2" class="card hide">
+            <h2>2. Pilih gejala</h2>
+            <p class="mut">Grade DBD ditentukan otomatis dari kasus yang paling mirip.</p>
+            <div class="grid" id="gej"></div>
+            <p id="e2" class="err"></p>
+            <div class="row">
+                <button id="back1">← Kembali</button>
+                <button id="all">Pilih semua</button>
+                <button id="none">Hapus pilihan</button>
+                <button id="ex">Isi contoh K1</button>
+                <button class="p" id="go">Proses diagnosis</button>
+            </div>
+        </section>
+
+        <section id="p3" class="hide"></section>
+
+        <details class="card">
+            <summary>Basis kasus</summary>
+            <p class="mut">Kasus bawaan berasal dari dataset. Kasus baru disimpan di browser setelah dikonfirmasi tenaga medis.</p>
+            <div id="kl"></div>
+            <div class="row">
+                <button id="clr">Hapus semua kasus tersimpan</button>
+            </div>
+        </details>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
