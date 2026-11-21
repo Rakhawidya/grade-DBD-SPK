@@ -102,9 +102,9 @@ def pilihan_menu(respons, key_radio, kata):
     """
     Mengambil nilai radio yang benar untuk dikirim ke Agent API.
 
-    Saat menu memakai `format_func` untuk ikon, nilai widget yang diterima
-    Agent API adalah teks tampilan (mis. "🩺 Konsultasi Baru"), bukan nilai
-    aslinya ("Konsultasi Baru").
+    Saat menu memakai `format_func` untuk penomoran, nilai widget yang diterima
+    Agent API adalah teks tampilan (mis. "02   Cek Gejala"), bukan nilai aslinya
+    ("Cek Gejala").
     """
     node = cari_node(respons.get("tree"), key_radio)
     if node is None:
@@ -157,22 +157,29 @@ def main():
         r = panggil({})
         cek("Aplikasi termuat tanpa error", "tree" in r, str(r)[:300])
         judul = json.dumps(r["tree"])
-        cek("Dashboard menampilkan metrik", "Jumlah Kasus Tersimpan" in judul)
+        cek("Beranda menampilkan ringkasan", "Pemeriksaan tercatat" in judul)
+        cek("Menu manajemen tidak ada", "Manajemen Kasus" not in judul)
 
-        print("\n=== 2. BUKA HALAMAN KONSULTASI ===")
-        key_radio = nilai_widget(r, "radio", "Menu Utama")
-        cek("Menu utama ditemukan", key_radio is not None)
-        menu_konsultasi = pilihan_menu(r, key_radio, "Konsultasi Baru")
-        r = panggil({"widget_state": {key_radio: menu_konsultasi}})
-        cek("Halaman konsultasi terbuka", "Konsultasi Baru" in json.dumps(r["tree"]))
+        print("\n=== 2. BUKA HALAMAN CEK GEJALA ===")
+        key_radio = nilai_widget(r, "radio", "Navigasi")
+        cek("Menu navigasi ditemukan", key_radio is not None)
+        menu_cek = pilihan_menu(r, key_radio, "Cek Gejala")
+        r = panggil({"widget_state": {key_radio: menu_cek}})
+        cek("Halaman cek gejala terbuka", "Cek Gejala" in json.dumps(r["tree"]))
 
         print("\n=== 3. ISI FORM: NAMA + GEJALA ===")
-        key_nama = nilai_widget(r, "text_input", "Nama / ID Kasus Baru")
+        key_nama = nilai_widget(r, "text_input", "Nama atau kode pasien")
         cek("Field nama kasus ditemukan", key_nama is not None)
 
-        # Centang 3 gejala: Demam, Sakit kepala, Nyeri otot (sesuai K1 acuan)
+        # Alur kini bertahap. Langkah 1: nama lalu "Lanjut".
+        key_lanjut = cari_aksi(r, "Lanjut")
+        cek("Tombol Lanjut ditemukan", key_lanjut is not None)
+        r = panggil({"widget_state": {key_nama: "Pasien E2E"}, "trigger": {"key": key_lanjut}})
+        cek("Langkah gejala terbuka", "Gejala apa yang Anda rasakan" in json.dumps(r["tree"]))
+
+        # Langkah 2: centang gejala lalu "Periksa Sekarang" (satu request).
+        widget_state = {}
         dicentang = []
-        widget_state = {key_nama: "Pasien E2E"}
         for aksi in r.get("actions", []):
             label = (aksi.get("label") or "").lower()
             if aksi.get("type") == "checkbox" and label.startswith(
@@ -180,66 +187,55 @@ def main():
             ):
                 widget_state[aksi["key"]] = True
                 dicentang.append(aksi["label"])
-
-        cek("3 gejala ditemukan & dicentang", len(dicentang) == 3, str(dicentang))
-
-        key_proses = cari_aksi(r, "Proses CBR")
-        cek("Tombol Proses CBR ditemukan", key_proses is not None)
-
-        # Satu request = satu rerun: state widget + trigger tombol bersamaan
+        cek("3 gejala ditemukan & dicentang (langkah 2)", len(dicentang) == 3, str(dicentang))
+        key_proses = cari_aksi(r, "Periksa Sekarang")
         r = panggil({"widget_state": widget_state, "trigger": {"key": key_proses}})
 
         isi = json.dumps(r["tree"])
-        cek("Retrieve ditampilkan", "Retrieve" in isi)
-        cek("Reuse ditampilkan", "Reuse" in isi)
-        cek("Revise ditampilkan", "Revise" in isi)
-        cek("Retain ditampilkan", "Retain" in isi)
-        cek("Vektor kasus baru tampil", "vektor kasus baru" in isi.lower())
+        cek("Hasil pemeriksaan ditampilkan", "Hasil Pemeriksaan" in isi)
+        cek("Tinjauan rekomendasi ditampilkan", "Tinjau Rekomendasi" in isi)
+        cek("Penyimpanan hasil ditampilkan", "Simpan Hasil" in isi)
+        cek("Vektor kasus baru tampil", "vektor gejala anda" in isi.lower())
         cek(
             "Tabel perbandingan tampil",
             "Dot Product" in isi and "Cosine Similarity" in isi,
         )
         cek("Detail langkah perhitungan tampil", "langkah perhitungan" in isi.lower())
 
-        print("\n=== 4. TAHAP REVISE ===")
-        key_revise = cari_aksi(r, "Validasi Solusi")
-        cek("Tombol Revise ditemukan", key_revise is not None)
+        print("\n=== 4. TAHAP TINJAU ===")
+        key_revise = cari_aksi(r, "Simpan Koreksi")
+        cek("Tombol tinjau ditemukan", key_revise is not None)
         r = panggil({"trigger": {"key": key_revise}})
         isi = json.dumps(r["tree"])
-        cek("Solusi final ditetapkan", "Solusi diterima" in isi or "hasil koreksi" in isi)
+        cek(
+            "Solusi final ditetapkan",
+            "Rekomendasi diterima" in isi or "Koreksi tersimpan" in isi,
+        )
 
-        print("\n=== 5. TAHAP RETAIN ===")
-        key_retain = cari_aksi(r, "Retain")
-        cek("Tombol Retain ditemukan", key_retain is not None)
+        print("\n=== 5. TAHAP SIMPAN ===")
+        key_retain = cari_aksi(r, "Simpan Hasil Pemeriksaan")
+        cek("Tombol simpan ditemukan", key_retain is not None)
         r = panggil({"trigger": {"key": key_retain}})
         isi = json.dumps(r["tree"])
-        cek("Retain berhasil disimpan", "Retain berhasil" in isi)
+        cek("Hasil pemeriksaan tersimpan", "Hasil pemeriksaan tersimpan" in isi)
 
-        print("\n=== 6. VERIFIKASI DASHBOARD ===")
-        key_radio = nilai_widget(r, "radio", "Menu Utama")
-        r = panggil({"widget_state": {key_radio: pilihan_menu(r, key_radio, "Dashboard")}})
+        print("\n=== 6. VERIFIKASI BERANDA ===")
+        key_radio = nilai_widget(r, "radio", "Navigasi")
+        r = panggil({"widget_state": {key_radio: pilihan_menu(r, key_radio, "Beranda")}})
         isi = json.dumps(r["tree"])
         cek("Jumlah kasus menjadi 5", '"value":5' in isi.replace(" ", ""), isi[:400])
-        cek("Konsultasi tercatat", "Hasil Perhitungan Terbaru" in isi)
+        cek("Hasil terakhir tampil", "Hasil Terakhir" in isi)
         cek("Vektor input tersimpan", "vektor" in isi.lower())
 
         print("\n=== 7. VERIFIKASI RIWAYAT ===")
-        key_radio = nilai_widget(r, "radio", "Menu Utama")
-        menu_riwayat = pilihan_menu(r, key_radio, "Riwayat Perhitungan")
+        key_radio = nilai_widget(r, "radio", "Navigasi")
+        menu_riwayat = pilihan_menu(r, key_radio, "Riwayat")
         r = panggil({"widget_state": {key_radio: menu_riwayat}})
         isi = json.dumps(r["tree"])
-        cek("Riwayat berisi konsultasi", "Pasien E2E" in isi)
+        cek("Riwayat berisi pemeriksaan", "Pasien E2E" in isi)
         cek("Detail perbandingan riwayat tampil", "Dot Product" in isi)
 
-        print("\n=== 8. VERIFIKASI MANAJEMEN KASUS ===")
-        key_radio = nilai_widget(r, "radio", "Menu Utama")
-        menu_kasus = pilihan_menu(r, key_radio, "Manajemen Kasus")
-        r = panggil({"widget_state": {key_radio: menu_kasus}})
-        isi = json.dumps(r["tree"])
-        cek("Kasus baru muncul di daftar", "Pasien E2E" in isi)
-        cek("Kasus contoh tetap ada", "Kasus contoh 1" in isi)
-
-        print("\nSEMUA TAHAP END-TO-END LULUS ✓")
+        print("\nSEMUA TAHAP END-TO-END LULUS")
     finally:
         bersihkan_data_uji()
         print("Data uji dibersihkan.")

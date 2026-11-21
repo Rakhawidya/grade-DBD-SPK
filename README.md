@@ -1,13 +1,18 @@
-# SPK Berbasis Case-Based Reasoning (CBR) — Deteksi DBD
+# CEKDBD — Sistem untuk mendeteksi gejala anda
 
-Aplikasi web dinamis untuk **Sistem Pendukung Keputusan** yang mengimplementasikan
-metode **Case-Based Reasoning (CBR)** dengan pencarian kasus paling mirip memakai
-**Cosine Similarity yang dihitung manual menggunakan Python dasar**.
+Aplikasi web untuk pemeriksaan gejala DBD berbasis **Case-Based Reasoning (CBR)**.
+Pengguna mengisi data singkat, memilih gejala, lalu melihat kasus paling mirip
+memakai **Cosine Similarity yang dihitung manual dengan Python dasar**.
 
 > Seluruh perhitungan inti (dot product, panjang vektor, cosine similarity,
 > penentuan kasus terdekat) ditulis sendiri dengan `for`, `if`, `def`,
 > operator indeks, dan operasi aritmatika biasa.
 > **Tidak ada NumPy / Pandas / Scikit-learn / SciPy** yang mengambil alih perhitungan.
+
+Tampilannya memakai design system tunggal di `ui/tema.py`: token warna, tipografi,
+ruang, radius, dan bayangan. Tiga halamannya memakai komponen yang sama agar
+konsisten di desktop, tablet, dan smartphone. Mode terang dipaksa walaupun
+perangkat memakai tema gelap.
 
 ---
 
@@ -50,15 +55,15 @@ python uji_end_to_end.py spk_dbd.db 8599
 ```
 
 Flag `--server.enableAgentApi true` wajib agar skrip bisa memakai endpoint
-`/_stcore/agent/interact`. Karena menu sidebar memakai ikon lewat `format_func`,
-skrip e2e membaca label tampilan (mis. `🩺 Konsultasi Baru`) melalui fungsi
-`pilihan_menu()`, bukan nilai radio mentahnya.
+`/_stcore/agent/interact`. Menu sidebar memakai penomoran lewat `format_func`,
+sehingga skrip e2e membaca label tampilan (mis. `02   Cek Gejala`) melalui
+fungsi `pilihan_menu()`, bukan nilai radio mentahnya.
 
 47 pengujian mencakup: dot product, rincian perkalian, jumlah kuadrat,
 panjang vektor, cosine similarity, vektor nol, jumlah atribut berbeda,
-penentuan kasus terdekat, peringkat, CRUD database, validasi duplikat kode,
-alur konsultasi lengkap (Retrieve → Reuse → Revise → Retain), pesan feedback
-setelah `st.rerun()`, dan render setiap halaman lewat AppTest Streamlit.
+penentuan kasus terdekat, peringkat, CRUD database, validasi, alur pemeriksaan
+lengkap (Retrieve → Reuse → Revise → Retain), identitas CEKDBD, tombol
+perpindahan menu, dan render setiap halaman lewat AppTest Streamlit.
 
 ---
 
@@ -81,13 +86,11 @@ spk-db/
 │   └── validasi.py            #   aturan validasi form
 │
 ├── ui/                        # ===== TAMPILAN (Streamlit) =====
-│   ├── dashboard.py           #   ringkasan data + hasil terbaru
-│   ├── konsultasi.py          #   4 tahap CBR + tampilan transparan
-│   ├── kasus.py               #   manajemen kasus
-│   ├── kriteria.py            #   manajemen kriteria
-│   ├── riwayat.py             #   riwayat perhitungan
-│   ├── tema.py                #   CSS, sidebar, header, gauge, badge, penanda CBR
-│   └── helper.py              #   tabel, format angka, dan flash message
+│   ├── dashboard.py           #   Beranda + jalan masuk ke pemeriksaan
+│   ├── konsultasi.py          #   Cek Gejala: data → gejala → hasil → tinjau → simpan
+│   ├── riwayat.py             #   arsip pemeriksaan + kartu rincian
+│   ├── tema.py                #   design system, brand, stepper, gauge, kartu
+│   └── helper.py              #   tabel dan format angka untuk tampilan
 │
 ├── tests/                     # ===== PENGUJIAN =====
 │   ├── test_perhitungan.py    #   unit test matematika CBR
@@ -99,9 +102,13 @@ spk-db/
 └── DOKUMENTASI.md             # Dokumentasi lengkap untuk sidang
 ```
 
-> `index.html`, `script.js`, dan `style.css` adalah berkas dari versi awal
-> berbasis HTML statis. Aplikasi Streamlit **tidak membaca** ketiga berkas itu;
-> seluruh antarmuka ada di folder `ui/`.
+> Halaman manajemen kasus dan kriteria sengaja tidak disertakan. Data awal
+> (gejala dan kasus pembanding) tetap dibuat otomatis oleh `services/database.py`
+> supaya pemeriksaan langsung bisa digunakan.
+
+> Prototipe HTML statis lama (`index.html`, `script.js`, `style.css`) dan workflow
+> GitHub Pages yang hanya menyajikan prototipe itu sudah dihapus. Seluruh
+> antarmuka kini ada di folder `ui/`, dengan gaya visual terpusat di `ui/tema.py`.
 
 **Aturan pemisahan:** `core/` tidak boleh mengimpor Streamlit/database,
 `ui/` tidak boleh memuat perhitungan, `services/` tidak boleh memuat perhitungan CBR.
@@ -111,11 +118,14 @@ spk-db/
 ## 4. Alur Aplikasi
 
 ```
-User memilih gejala (form)
+User membuka "Cek Gejala"
+        │
+        ▼
+Isi data pasien → Lanjut → pilih gejala → Periksa Sekarang
         │
         ▼
 ui/konsultasi.py  ──►  core/cbr.py  ──►  core/cosine.py
-   (form & tampilan)     (bangun vektor,     (rincian dot, dot product,
+   (form & hasil)        (bangun vektor,     (rincian dot, dot product,
                           retrieve, reuse,     jumlah kuadrat, panjang vektor,
                           revise, retain)      cosine)
         │
@@ -129,11 +139,20 @@ services/ (validasi)  ──►  services/database.py  ──►  spk_dbd.db
 
 | Halaman | Fitur |
 |---|---|
-| **Dashboard** | Tema modern, sidebar gelap, kartu metrik, gauge persentase, grafik kemiripan, kartu alur CBR, riwayat 5 konsultasi terakhir |
-| **Konsultasi Baru** | Form berkartu, penanda 4 tahap, spinner, ringkasan kasus paling mirip, detail perkalian tiap gejala |
-| **Manajemen Kasus** | Kartu ringkas, form berkartu, daftar kasus rapi; tambah, ubah, hapus kasus beserta solusi & gejala |
-| **Manajemen Kriteria** | Dua kolom Tambah/Perbarui + kartu ringkas; proteksi kriteria yang sudah dipakai kasus |
-| **Riwayat Perhitungan** | Kartu ringkas, gauge per konsultasi, detail dot product, panjang vektor, cosine, peringkat |
+| **Beranda** | Tombol mulai pemeriksaan, ringkasan sistem, hasil terakhir, tiga kasus terdekat, penjelasan alur CBR |
+| **Cek Gejala** | Alur dua langkah (data → gejala), gejala dua kolom dikelompokkan, stepper, label gejala terpilih, hasil dengan gauge dan status, tiga kasus terdekat, rincian perhitungan, tinjau solusi, simpan hasil, serta **Ubah Gejala** / **Pemeriksaan Baru** |
+| **Riwayat** | Pencarian pemeriksaan, ekspor ringkasan CSV, kartu pemeriksaan dengan persentase dan status, rincian perbandingan, serta audit dot product/panjang vektor/cosine per kasus |
+
+Tampilan sengaja dibuat tenang: tanpa emoji berlebihan, tanpa gradien generik,
+dengan tipografi yang jelas dan ruang kosong yang cukup. Warna, font, radius,
+dan bayangan didefinisikan sebagai design token di `ui/tema.py`, sehingga
+perubahan desain cukup dilakukan di satu tempat. Status fokus, tombol utama,
+dan tata letak responsif juga sudah disempurnakan untuk desktop, tablet, dan
+ponsel. Beranda memakai headline editorial dengan ringkasan sistem, Cek Gejala
+memisahkan input data dan gejala menjadi dua langkah serta menampilkan gejala
+terpilih sebagai label kecil, dan Riwayat dapat dicari, diekspor ke CSV, serta
+dipindai lewat kartu ringkas sebelum membuka rincian angka.
+Perhitungan tetap transparan dan bisa dijelaskan baris per baris.
 
 ---
 

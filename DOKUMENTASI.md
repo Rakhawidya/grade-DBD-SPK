@@ -64,13 +64,11 @@ spk-db/
 │
 ├── ui/
 │   ├── __init__.py
-│   ├── dashboard.py
-│   ├── konsultasi.py          # Halaman 4 tahap CBR
-│   ├── kasus.py
-│   ├── kriteria.py
-│   ├── riwayat.py
-│   ├── tema.py                # CSS, sidebar, header, gauge, badge, penanda CBR
-│   └── helper.py              # Tabel, format angka, flash message (tanpa logika)
+│   ├── dashboard.py           # Beranda + tombol mulai pemeriksaan
+│   ├── konsultasi.py          # Cek Gejala: input → hasil → tinjau → simpan
+│   ├── riwayat.py             # Arsip pemeriksaan + kartu rincian
+│   ├── tema.py                # Design system, brand, stepper, gauge, kartu
+│   └── helper.py              # Tabel dan format angka (tanpa perhitungan)
 │
 ├── tests/
 │   ├── __init__.py
@@ -81,20 +79,23 @@ spk-db/
 └── uji_end_to_end.py          # Uji HTTP ke server Streamlit yang berjalan
 ```
 
-Catatan: `index.html`, `script.js`, dan `style.css` adalah sisa versi awal
-berbasis HTML statis dan tidak dipakai oleh aplikasi Streamlit.
+Halaman manajemen kasus dan kriteria sengaja dihilangkan dari aplikasi. Paket
+`services/` tetap menyimpan CRUD karena dibutuhkan untuk menyiapkan data awal,
+menyimpan hasil, dan menjaga urutan vektor. Prototipe HTML statis lama dan
+workflow GitHub Pages yang hanya menyajikan prototipe tersebut sudah dihapus;
+styling aktif seluruhnya berada di `ui/tema.py`.
 
 ---
 
 ## 3. Alur Data dari Input hingga Hasil
 
 ```
-[1] USER membuka menu "Konsultasi Baru"
+[1] USER membuka menu "Cek Gejala"
         │
-[2] FORM menampilkan daftar gejala dari tabel `kriteria`
+[2] FORM menampilkan data pasien + daftar gejala dari tabel `kriteria`
         │   (urutan diambil dari kolom urutan -> menjamin urutan vektor sama)
         ▼
-[3] USER mengcentang gejala lalu menekan "Proses CBR"
+[3] USER mengcentang gejala lalu menekan "Periksa Sekarang"
         │
 [4] services/validasi.py  memeriksa:
         │   - nama kasus terisi
@@ -120,11 +121,11 @@ berbasis HTML statis dan tidak dipakai oleh aplikasi Streamlit.
 [12] core/cbr.py :: retain()   -> payload disiapkan
         │
 [13] services/kasus.py + services/riwayat.py
-        │   kasus baru + riwayat konsultasi + detail perbandingan
+        │   kasus baru + riwayat pemeriksaan + detail perbandingan
         ▼
 [14] DATABASE SQLite (spk_dbd.db)
         │
-[15] Kasus baru otomatis menjadi PEMBANDING pada konsultasi berikutnya
+[15] Kasus baru otomatis menjadi PEMBANDING pada pemeriksaan berikutnya
 ```
 
 ---
@@ -408,11 +409,12 @@ sehingga hasil aplikasi dapat langsung dibandingkan.
 | Kasus paling mirip | `test_kasus_paling_mirip_sesuai_kode_acuan` |
 | Penyimpanan data | `test_tambah_kasus_nilai_tersimpan_urut`, `TestCRUDKriteria` |
 | Pengambilan data | `test_tabel_dan_data_awal_terisi`, `test_urutan_kode_konsisten` |
-| Alur konsultasi penuh | `test_konsultasi_penuh_sesuai_kode_acuan`, `test_konsultasi_penuh_lewat_ui` |
-| Validasi form | `TestValidasi`, `test_form_kosong_menampilkan_error` |
+| Alur pemeriksaan penuh | `test_konsultasi_penuh_sesuai_kode_acuan`, `test_pemeriksaan_penuh_lewat_ui` |
+| Validasi form | `TestValidasi`, `test_form_kosong_menampilkan_error`, `test_gejala_kosong_menampilkan_error` |
 | Detail angka ikut tersimpan di hasil retrieve | `test_retrieve_menyertakan_detail_perhitungan` |
 | Kode kriteria duplikat ditolak | `test_kode_duplikat_ditolak_validasi`, `test_kode_duplikat_ditolak_service` |
-| Feedback survive setelah rerun | `test_feedback_tambah_kriteria_muncul_setelah_rerun` |
+| Identitas dan menu CEKDBD | `test_identitas_dan_menu_cekd_bd` |
+| Tombol perpindahan menu | `test_tombol_mulai_memindah_ke_cek_gejala` |
 | Semua halaman render | `TestHalamanRender` |
 
 ---
@@ -435,7 +437,8 @@ sehingga hasil aplikasi dapat langsung dibandingkan.
 **Q: Bagaimana CBR diimplementasikan?**
 > Retrieve = `retrieve()`, Reuse = `reuse()`, Revise = `revise()`
 > (ditinjau user lewat form), Retain = `retain()` + penyimpanan ke database.
-> Keempatnya punya fungsi dan halaman sendiri.
+> Keempatnya berjalan berurutan di satu halaman **Cek Gejala**, bukan dipecah
+> menjadi beberapa menu. Rincian perhitungannya tetap bisa dibuka.
 
 **Q: Bagaimana membuktikan hasilnya benar?**
 > Menjalankan `python -m unittest discover -s tests -v` — 47 tes, termasuk
@@ -448,33 +451,54 @@ sehingga hasil aplikasi dapat langsung dibandingkan.
 
 ---
 
-## 16. Penyempurnaan Antarmuka Streamlit
+## 16. Penyempurnaan Antarmuka CEKDBD
 
-Beberapa perbaikan yang dibuat agar aplikasi lebih enak dipakai dan lebih
-mudah dipertanggungjawabkan:
+Aplikasi sengaja dibuat seperti website pada umumnya, bukan seperti template AI.
+Artinya: warna dibatasi, tipografi rapi, ruang kosong cukup, dan setiap layar
+punya satu tujuan yang jelas.
 
 | Penyempurnaan | Lokasi | Alasan |
 |---|---|---|
-| Tema warna, sidebar gelap, kartu metrik, dan tata letak responsif | `ui/tema.py` | Tampilan konsisten di desktop dan ponsel tanpa pustaka CSS tambahan |
-| Hero card dan badge pada tiap halaman | `tema.header()` | Judul lebih jelas dan identik di seluruh menu |
-| Judul bagian seragam (badge → subheader → caption) | `tema.bagian()` | Tiap tahap CBR dan kartu data punya pola yang sama |
-| Indikator kemiripan berbentuk cincin (*gauge*) | `tema.gauge()` | Persentase kemiripan langsung terbaca di dashboard dan hasil Reuse |
-| Dashboard dua kolom + kartu alur CBR | `ui/dashboard.py`, `tema.flow_cards()` | Hasil terbaru, grafik, dan tahapan mudah dipindai |
-| Ikon menu sidebar lewat `format_func=tema.ikon_menu()` | `app.py`, `ui/tema.py` | Tampilan lebih hidup; nilai radio asli tetap dipakai UI, sedangkan Agent API menerima label bergambar |
-| Kartu ringkas di Manajemen Kasus, Kriteria, dan Riwayat | `tema.kartu_ringkas()` | Angka penting langsung terlihat tanpa membaca tabel dulu |
-| Tata letak dua kolom pada Manajemen Kriteria | `ui/kriteria.py` | Form Tambah dan form Perbarui tidak saling mendesak |
-| Gauge pada tiap item riwayat | `ui/riwayat.py`, `tema.gauge()` | Kemiripan lama dapat dipindai cepat sebelum expander dibuka |
-| Penanda empat tahap CBR | `tema.langkah_cbr()` | User melihat tahap mana yang sedang berjalan |
-| Spinner saat perbandingan | `ui/konsultasi.py` | Memberi status proses saat banyak kasus dihitung |
-| Langkah dot product per gejala | `ui/helper.py` + `core/cosine.py` | Angka cosine tidak muncul "tiba-tiba"; asalnya bisa diaudit |
-| Flash message setelah `st.rerun()` | `ui/helper.py` | Pesan "berhasil disimpan/diubah/dihapus" benar-benar terlihat |
-| Riwayat 5 konsultasi terakhir di dashboard | `ui/dashboard.py` | Ringkasan aktivitas langsung terlihat tanpa buka menu riwayat |
-| Proteksi duplikat kode kriteria di lapisan database | `services/kriteria.py` | Menjaga integritas urutan vektor walaupun form dilewati |
+| Identitas CEKDBD + tagline "sistem untuk mendeteksi gejala anda" | `app.py`, `ui/tema.py` | Sidebar langsung menjelaskan apa aplikasi ini, tanpa nama generik |
+| Tiga menu saja: Beranda, Cek Gejala, Riwayat | `app.py` | Halaman manajemen kasus/kriteria dihilangkan karena tidak diperlukan pengguna |
+| Penomoran menu lewat `format_func=tema.label_menu()` | `app.py`, `ui/tema.py` | Navigasi mudah dipindai; nilai radio asli tetap sederhana |
+| Warna netral, aksen hijau tunggal, tanpa gradien generik | `ui/tema.py` | Kesan lebih tenang dan dibuat manusiawi |
+| Design token di `:root` untuk warna, font, radius, dan bayangan | `ui/tema.py` | Perubahan desain cukup dilakukan di satu tempat |
+| Status fokus hijau pada input, textarea, dan tombol | `ui/tema.py` | Navigasi keyboard terlihat jelas tanpa mengubah identitas visual |
+| Dukungan `prefers-reduced-motion` | `ui/tema.py` | Pengguna yang mengurangi animasi tetap mendapat tampilan yang sama |
+| Responsivitas lanjutan: kolom dibagi dua di tablet, tombol penuh di ponsel | `ui/tema.py` | Form dan hasil tetap enak dipakai di layar kecil |
+| Judul kartu serif memakai `tema.judul_kartu()` | `ui/tema.py`, `ui/dashboard.py`, `ui/konsultasi.py`, `ui/riwayat.py` | Nama kasus dan solusi akhir konsisten di semua halaman |
+| Tombol utama menonjol + petunjuk pada field nama | `ui/konsultasi.py` | Aksi utama dan cara mengisi data lebih mudah dipahami |
+| Judul dengan *eyebrow*, deskripsi satu paragraf, dan nomor bagian | `tema.header()`, `tema.bagian()` | Hirarki informasi jelas tanpa dekorasi berlebih |
+| Langkah Data → Gejala → Analisis → Hasil | `tema.langkah_cbr()` | Pengguna tahu posisinya dalam alur pemeriksaan |
+| Hero editorial + tiga langkah singkat di Beranda | `ui/dashboard.py`, `tema.quick_steps()` | Arah masuk jelas tanpa banner besar yang berisik |
+| Baris ringkasan label → nilai | `tema.meta_rows()` | Data hasil lebih mudah dipindai daripada paragraf |
+| Gejala terpilih ditampilkan sebagai label kecil | `tema.pil_ringkas()` | Pengguna bisa mengonfirmasi input sebelum membaca hasil |
+| Catatan bahwa hasil bukan diagnosis medis final | `tema.catatan()`, `ui/konsultasi.py` | Menjaga ekspektasi dan nada aplikasi tetap manusiawi |
+| Alur dua langkah: data lalu gejala, dengan tombol **Lanjut** dan **Kembali** | `ui/konsultasi.py` | Satu pertanyaan utama per layar, pengguna tidak perlu mengisi semuanya sekaligus |
+| Form gejala dua kolom di dalam kartu langkah 2 | `ui/konsultasi.py` | Mudah dibaca, tetap rapi di layar sempit |
+| Tombol **Ubah Gejala** dan **Pemeriksaan Baru** di akhir hasil | `ui/konsultasi.py` | Input bisa dikoreksi atau diulang tanpa kehilangan riwayat |
+| Indikator kemiripan berbentuk cincin (*gauge*) | `tema.gauge()` | Persentase kemiripan langsung terbaca di hasil dan riwayat |
+| Kartu ringkas pada ringkasan halaman | `tema.kartu_ringkas()`, `ui/riwayat.py` | Angka penting terlihat sebelum membaca tabel |
+| Tombol "Mulai Pemeriksaan" di Beranda | `ui/dashboard.py` | Jalan masuk utama jelas tanpa harus mencari menu |
+| Rincian dot product, panjang vektor, dan cosine | `ui/konsultasi.py`, `ui/helper.py` | Angka tidak muncul "tiba-tiba"; asalnya bisa diaudit |
+| Expander per pemeriksaan di Riwayat | `ui/riwayat.py` | Arsip tetap rapi, tetapi detail lama tetap bisa dibuka |
+| Panel tinjau dan simpan dua kolom | `ui/konsultasi.py` | Penjelasan di kiri, aksi di kanan, sehingga keputusan terasa lebih sengaja |
+| Daftar peringkat dengan batang kemiripan | `tema.peringkas()` | Tiga kasus terdekat lebih mudah dibandingkan tanpa tabel kaku |
+| Aktivitas terbaru berbentuk daftar | `tema.aktivitas_ringkas()` | Riwayat singkat tetap terbaca di layar sempit |
+| Pencarian dan ekspor CSV pada Riwayat | `ui/riwayat.py` | Arsip bukan hanya bisa dilihat, tetapi juga dipakai ulang |
+| Pesan validasi dan konfirmasi setelah `st.rerun()` | `ui/helper.py`, `ui/konsultasi.py` | Pengguna tidak kehilangan informasi setelah halaman dimuat ulang |
+| Data awal otomatis dari `services/database.py` | `services/database.py` | Aplikasi langsung bisa dipakai walaupun menu CRUD tidak ada |
+
+Alur bertahap di atas diselaraskan dengan `files.zip` (berisi
+`CEKDBD_Alur_Bertahap.zip` dan `perubahan_alur_bertahap.patch`), lalu dipadukan
+dengan penyempurnaan editorial yang sudah ada di proyek. Tombol, stepper, dan
+uji antarmuka mengikuti alur **Data → Gejala → Hasil** dari berkas tersebut.
 
 Catatan pengujian antarmuka: karena menu sidebar memakai `format_func`, nilai
-yang dikirim Agent API adalah label tampilan seperti `🩺 Konsultasi Baru`.
+yang dikirim Agent API adalah label tampilan seperti `02   Cek Gejala`.
 Fungsi `pilihan_menu()` pada `uji_end_to_end.py` mengambil label tersebut dari
-tree Streamlit, sehingga uji HTTP tetap benar walaupun ikon ditambahkan.
+tree Streamlit, sehingga uji HTTP tetap benar.
 
 Semua penyempurnaan di atas **tidak mengubah rumus**. Nilai dot product,
 panjang vektor, dan cosine tetap sama persis dengan kode acuan `cbr.py`.
