@@ -1,0 +1,8 @@
+# Framework web (antarmuka dinamis)
+streamlit>=1.40
+
+# Catatan:
+# - sqlite3, json, math (untuk tes) adalah modul bawaan Python, tidak perlu instal.
+# - NumPy/Pandas ikut terpasang sebagai dependensi Streamlit HANYA untuk
+#   keperluan tampilan Streamlit. Kode project ini TIDAK mengimpor NumPy/Pandas
+#   dan tidak memakainya untuk perhitungan CBR maupun Cosine Similarity.
