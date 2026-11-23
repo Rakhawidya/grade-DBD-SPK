@@ -36,7 +36,7 @@ class TestDatabase(DatabaseTestCase):
         """SPK_DB_PATH harus dibaca ulang, bukan dibekukan saat import.
 
         Pengujian UI mengganti environment variable setelah modul database
-        di-import. Meng caching DB_PATH akan membuat tes itu menulis ke
+        di-import. Meng-cache DB_PATH akan membuat tes itu menulis ke
         database aplikasi yang nyata.
         """
         f = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
@@ -67,6 +67,19 @@ class TestDatabase(DatabaseTestCase):
         self.assertEqual(urutan[0], "G01")
         self.assertEqual(urutan[-1], "G14")
         self.assertEqual(len(urutan), 14)
+
+    def test_seed_kasus_sama_dengan_kode_acuan(self):
+        """Vektor seed database tidak boleh menyimpang dari cbr.py."""
+        referensi = [
+            [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1],
+            [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1],
+        ]
+        urutan = kriteria.urutan_kode(self.db_path)
+        daftar = sorted(kasus.daftar_kasus(self.db_path), key=lambda k: k["id"])
+        siap = cbr.siapkan_kasus_lama(daftar, urutan)
+        self.assertEqual([k["vektor"] for k in siap], referensi)
 
     def test_inisialisasi_bisa_dijalankan_berulang(self):
         # Idempoten: tidak error dan tidak menduplikasi data

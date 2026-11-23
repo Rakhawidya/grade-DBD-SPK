@@ -81,10 +81,12 @@ def _beri_peringkat(urut):
 def retrieve(vektor_baru, kasus_lama):
     panjang_baru = panjang_vektor(vektor_baru)
     jumlah_kuadrat_baru = jumlah_kuadrat(vektor_baru)
-    hasil = [
-        _hitung_perbandingan(vektor_baru, kasus, panjang_baru, jumlah_kuadrat_baru)
-        for kasus in kasus_lama
-    ]
+    hasil = []
+    for kasus in kasus_lama:
+        perbandingan = _hitung_perbandingan(
+            vektor_baru, kasus, panjang_baru, jumlah_kuadrat_baru
+        )
+        hasil.append(perbandingan)
     urut = _urutkan_tertinggi(hasil)
     return _beri_peringkat(urut)
 

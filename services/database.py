@@ -1,24 +1,3 @@
-"""
-Modul database: koneksi SQLite, pembuatan tabel, dan data awal.
-
-Database SQLite dipilih karena:
-    - bawaan Python (modul sqlite3), tidak perlu instal server
-    - file tunggal, mudah dihapus/dibuat ulang saat belajar
-    - mendukung relasi (kriteria <-> kasus <-> riwayat)
-
-Struktur tabel:
-
-    kriteria          : daftar gejala/atribut (kode, nama, urutan)
-    kasus             : kasus lama (nama, solusi, keterangan)
-    kasus_nilai       : nilai 0/1 setiap kriteria pada sebuah kasus
-    konsultasi        : riwayat konsultasi + vektor input + solusi final
-    konsultasi_detail : hasil perbandingan tiap kasus pada satu konsultasi
-                        (dot product, panjang, cosine, peringkat)
-
-Urutan kriteria diambil dari kolom `urutan` sehingga vektor kasus lama dan
-kasus baru selalu dibangun dengan urutan yang sama.
-"""
-
 import datetime
 import os
 import sqlite3
@@ -26,29 +5,18 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-# File database bawaan diletakkan di folder project supaya mudah ditemukan.
-# Environment variable SPK_DB_PATH dibaca ulang setiap koneksi dibuka, bukan
-# dibekukan saat modul di-import; pengujian UI menggantinya setelah import.
 DB_PATH = Path(__file__).resolve().parent.parent / "spk_dbd.db"
 
 
 def _path_database():
-    """Menentukan file database aktif pada saat koneksi dibuka."""
-    return Path(os.environ.get("SPK_DB_PATH", str(DB_PATH)))
+    return Path(os.environ.get("SPK_DB_PATH") or str(DB_PATH))
 
 
 def waktu_sekarang():
-    """Format waktu yang dipakai semua tabel (satu sumber, satu format)."""
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def hitung_baris(k, tabel, syarat=None, parameter=()):
-    """
-    Menghitung baris dengan alias `jml`, seperti seluruh query COUNT lama.
-
-    `tabel` dan `syarat` hanya boleh berisi konstanta internal modul service;
-    nilai yang berasal dari user tetap lewat `parameter`.
-    """
     sql = f"SELECT COUNT(*) AS jml FROM {tabel}"
     if syarat:
         sql += f" WHERE {syarat}"
@@ -57,19 +25,6 @@ def hitung_baris(k, tabel, syarat=None, parameter=()):
 
 @contextmanager
 def koneksi(db_path=None):
-    """
-    Membuka koneksi ke database, lalu MENUTUPnya setelah selesai.
-
-    Menggunakan context manager (`with koneksi(...) as k:`) penting karena:
-      - perubahan otomatis di-commit bila tidak ada error
-      - koneksi selalu ditutup, sehingga file .db tidak terkunci
-        (di Windows file yang masih terbuka tidak bisa dihapus/dibaca ulang)
-
-    Urutan penentuan file database:
-      1. parameter db_path        (untuk pengujian per fungsi)
-      2. environment SPK_DB_PATH  (untuk pengujian aplikasi penuh)
-      3. file bawaan spk_dbd.db
-    """
     if db_path is not None:
         path = Path(db_path)
     else:
@@ -78,7 +33,6 @@ def koneksi(db_path=None):
     k = sqlite3.connect(str(path))
     k.row_factory = sqlite3.Row   # agar hasil query bisa diakses per kolom
     try:
-        # Di dalam try supaya koneksi tetap ditutup bila PRAGMA gagal.
         k.execute("PRAGMA foreign_keys = ON")
         yield k
         k.commit()
@@ -90,10 +44,6 @@ def koneksi(db_path=None):
 
 
 def inisialisasi_database(db_path=None):
-    """
-    Membuat semua tabel bila belum ada, lalu mengisi data awal
-    (kriteria dan kasus contoh) bila tabel masih kosong.
-    """
     with koneksi(db_path) as k:
         k.executescript("""
             CREATE TABLE IF NOT EXISTS kriteria (
@@ -155,13 +105,6 @@ def inisialisasi_database(db_path=None):
 
 
 def _isi_data_awal(k):
-    """
-    Mengisi 14 gejala DBD + 4 kasus contoh.
-
-    Empat vektor kasus contoh sengaja dibuat sama persis dengan `data_lama`
-    pada file cbr.py (kode acuan), sehingga hasil perhitungan aplikasi dapat
-    dibandingkan langsung dengan kode acuan tersebut.
-    """
     gejala = [
         ("G01", "Demam tinggi mendadak", 1),
         ("G02", "Sakit kepala", 2),

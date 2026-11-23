@@ -6,6 +6,7 @@ dan alur pemeriksaan dapat diuji tanpa browser.
 """
 
 import os
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -58,6 +59,10 @@ class TestHalamanRender(unittest.TestCase):
         self.assertEqual(tema.label_menu("Cek Gejala"), "02   Cek Gejala")
         self.assertEqual(tema.label_menu("Riwayat"), "03   Riwayat")
 
+        # Label asli tidak boleh disembunyikan CSS lalu diganti pseudo-element.
+        self.assertNotIn("font-size: 0 !important", tema._CSS)
+        self.assertNotIn('content: "Beranda"', tema._CSS)
+
         at = jalankan_app("Beranda")
         radio = at.sidebar.radio[0]
         self.assertEqual(radio.value, "Beranda")
@@ -87,8 +92,6 @@ class TestAlurPemeriksaanDiUI(unittest.TestCase):
     """Menguji alur lengkap dari form sampai penyimpanan hasil."""
 
     def setUp(self):
-        import tempfile
-
         f = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         f.close()
         self.db_path = f.name

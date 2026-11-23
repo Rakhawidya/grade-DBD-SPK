@@ -18,6 +18,7 @@ kedua opsional berguna bila port 8599 sedang dipakai aplikasi lain.
 
 import json
 import os
+import re
 import sqlite3
 import sys
 import urllib.request
@@ -45,21 +46,6 @@ def panggil(body):
 
     if "session_id" in hasil:
         SESSION["id"] = hasil["session_id"]
-    return hasil
-
-
-def semua_elemen(pohon, jenis=None, hasil=None):
-    """Menelusuri pohon elemen Streamlit, mengumpulkan node bertipe `jenis`."""
-    if hasil is None:
-        hasil = []
-    if isinstance(pohon, dict):
-        if jenis is None or pohon.get("type") == jenis:
-            hasil.append(pohon)
-        for anak in pohon.get("children", []) or []:
-            semua_elemen(anak, jenis, hasil)
-    elif isinstance(pohon, list):
-        for item in pohon:
-            semua_elemen(item, jenis, hasil)
     return hasil
 
 
@@ -189,6 +175,7 @@ def main():
                 dicentang.append(aksi["label"])
         cek("3 gejala ditemukan & dicentang (langkah 2)", len(dicentang) == 3, str(dicentang))
         key_proses = cari_aksi(r, "Periksa Sekarang")
+        cek("Tombol Periksa Sekarang ditemukan", key_proses is not None)
         r = panggil({"widget_state": widget_state, "trigger": {"key": key_proses}})
 
         isi = json.dumps(r["tree"])
@@ -223,7 +210,11 @@ def main():
         key_radio = nilai_widget(r, "radio", "Navigasi")
         r = panggil({"widget_state": {key_radio: pilihan_menu(r, key_radio, "Beranda")}})
         isi = json.dumps(r["tree"])
-        cek("Jumlah kasus menjadi 5", '"value":5' in isi.replace(" ", ""), isi[:400])
+        cek(
+            "Jumlah kasus menjadi 5",
+            re.search(r'"value"\s*:\s*5\b', isi) is not None,
+            isi[:400],
+        )
         cek("Hasil terakhir tampil", "Hasil Terakhir" in isi)
         cek("Vektor input tersimpan", "vektor" in isi.lower())
 

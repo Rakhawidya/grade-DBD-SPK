@@ -1,5 +1,6 @@
 # Framework web (antarmuka dinamis)
-streamlit>=1.40
+# >=1.50 diperlukan untuk st.html() dan st.dataframe(width=...).
+streamlit>=1.50
 
 # Catatan:
 # - sqlite3, json, math (untuk tes) adalah modul bawaan Python, tidak perlu instal.

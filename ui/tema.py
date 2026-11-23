@@ -293,57 +293,26 @@ p, li { line-height: 1.65; }
     border-color: var(--accent);
     transform: translateX(2px);
 }
-/* Sembunyikan indikator radio bawaan Streamlit. */
+/* Indikator radio bawaan disembunyikan, tetapi teks asli dari label_menu()
+   tetap ditampilkan. Label sudah berisi nomor, mis. "02   Cek Gejala",
+   jadi tidak perlu pseudo-element yang bisa gagal saat DOM Streamlit berubah. */
 [data-testid="stRadioOption"] > div > div:first-child { display: none !important; }
 [data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p {
     align-items: center;
     color: var(--ink) !important;
     display: flex;
-    font-size: 0 !important;
-    gap: var(--space-3);
+    font-size: var(--text-md) !important;
+    font-weight: 700;
+    line-height: 1.3;
     margin: 0;
+    white-space: pre-wrap;
 }
-[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p::before {
-    align-items: center;
-    background: var(--surface-alt);
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    color: var(--muted) !important;
-    content: "00";
-    display: inline-flex;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    height: 28px;
-    justify-content: center;
-    letter-spacing: 0;
-    width: 30px;
-}
-[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p::after {
-    color: var(--ink) !important;
-    content: "Menu";
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-}
-[data-testid="stRadioGroup"] > div:nth-child(1) p::before { content: "01"; }
-[data-testid="stRadioGroup"] > div:nth-child(1) p::after { content: "Beranda"; }
-[data-testid="stRadioGroup"] > div:nth-child(2) p::before { content: "02"; }
-[data-testid="stRadioGroup"] > div:nth-child(2) p::after { content: "Cek Gejala"; }
-[data-testid="stRadioGroup"] > div:nth-child(3) p::before { content: "03"; }
-[data-testid="stRadioGroup"] > div:nth-child(3) p::after { content: "Riwayat"; }
-
 [data-testid="stRadioOption"][data-selected="true"] {
     background: var(--accent-soft);
     border-color: var(--accent);
     box-shadow: inset 3px 0 0 var(--accent);
 }
-[data-testid="stRadioOption"][data-selected="true"] p::before {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--white) !important;
-}
-[data-testid="stRadioOption"][data-selected="true"] p::after {
+[data-testid="stRadioOption"][data-selected="true"] [data-testid="stMarkdownContainer"] p {
     color: var(--accent-dark) !important;
 }
 [data-testid="stRadioOption"]:focus-visible {
@@ -611,42 +580,72 @@ div[data-testid="stMetricValue"] {
 }
 
 /* ---------- Tombol ---------- */
-/* Selector internal Streamlit: versi lama memakai `baseButton-*`, versi baru
-   memakai `stBaseButton-*`. Form submit primary memakai testid
-   `primaryFormSubmit`, jadi ikut dicakup supaya tidak jatuh ke merah bawaan. */
+/* Selector internal Streamlit: versi lama `baseButton-*`, versi baru
+   `stBaseButton-*`. Keduanya dicakup supaya label tombol selalu terbaca. */
+button[data-testid="baseButton-primary"],
+button[data-testid="stBaseButton-primary"],
+button[data-testid="baseButton-primaryFormSubmit"],
+button[data-testid="stBaseButton-primaryFormSubmit"],
+button[data-testid="baseButton-secondary"],
+button[data-testid="stBaseButton-secondary"],
+button[data-testid="baseButton-secondaryFormSubmit"],
+button[data-testid="stBaseButton-secondaryFormSubmit"] {
+    border-radius: var(--radius-sm) !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    line-height: 1.25 !important;
+    min-height: 44px;
+    padding: 0.6rem 1.15rem !important;
+    text-align: center !important;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                box-shadow 0.15s ease, transform 0.08s ease;
+    white-space: normal !important;
+}
+/* Streamlit 1.67 membungkus teks tombol dalam span/div. Paksa warna turunan
+   supaya tidak terjadi teks putih di atas latar putih (atau sebaliknya). */
+button[data-testid^="baseButton-"] *,
+button[data-testid^="stBaseButton-"] * {
+    color: inherit !important;
+}
 button[data-testid="baseButton-primary"],
 button[data-testid="stBaseButton-primary"],
 button[data-testid="baseButton-primaryFormSubmit"],
 button[data-testid="stBaseButton-primaryFormSubmit"] {
-    background: var(--accent-dark) !important;
-    border: 1px solid var(--accent-dark) !important;
-    border-radius: var(--radius-sm) !important;
+    background: var(--hero-accent) !important;
+    border: 1px solid var(--hero-accent) !important;
     box-shadow: var(--button-shadow) !important;
     color: var(--white) !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.01em;
-    min-height: 44px;
-    padding: 0.6rem 1.15rem !important;
-    transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
-/* Metrik form submit disamakan dengan tombol primary biasa. */
-button[data-testid="baseButton-primaryFormSubmit"],
-button[data-testid="stBaseButton-primaryFormSubmit"] {
-    font-size: 0.9rem !important;
+button[data-testid="baseButton-secondary"],
+button[data-testid="stBaseButton-secondary"],
+button[data-testid="baseButton-secondaryFormSubmit"],
+button[data-testid="stBaseButton-secondaryFormSubmit"] {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--ink) !important;
 }
 button[data-testid="baseButton-primary"]:hover,
 button[data-testid="stBaseButton-primary"]:hover,
 button[data-testid="baseButton-primaryFormSubmit"]:hover,
 button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
-    background: var(--surface-deep) !important;
-    border-color: var(--surface-deep) !important;
+    background: var(--hero-accent-dark) !important;
+    border-color: var(--hero-accent-dark) !important;
     box-shadow: var(--shadow-md) !important;
 }
 button[data-testid="baseButton-primary"]:active,
 button[data-testid="stBaseButton-primary"]:active,
 button[data-testid="baseButton-primaryFormSubmit"]:active,
 button[data-testid="stBaseButton-primaryFormSubmit"]:active { transform: translateY(1px); }
-/* Tombol sedang memuat tetap paling mirip primary, tanpa bayangan/efek aktif. */
+button[data-testid="baseButton-secondary"]:hover,
+button[data-testid="stBaseButton-secondary"]:hover,
+button[data-testid="baseButton-secondaryFormSubmit"]:hover,
+button[data-testid="stBaseButton-secondaryFormSubmit"]:hover {
+    background: var(--hover) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent-dark) !important;
+}
+/* Tombol sedang memuat tetap kontras, tanpa bayangan/efek aktif. */
 button[data-testid="baseButton-primary"]:disabled,
 button[data-testid="stBaseButton-primary"]:disabled,
 button[data-testid="baseButton-primaryFormSubmit"]:disabled,
@@ -658,28 +657,22 @@ button[data-testid="stBaseButton-primaryFormSubmit"]:disabled {
     cursor: not-allowed;
     transform: none;
 }
-button[data-testid="baseButton-secondary"],
-button[data-testid="stBaseButton-secondary"] {
-    background: var(--surface) !important;
-    border: 1px solid var(--line) !important;
-    border-radius: var(--radius-sm) !important;
-    color: var(--ink) !important;
-    min-height: 44px;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-button[data-testid="baseButton-secondary"]:hover,
-button[data-testid="stBaseButton-secondary"]:hover {
-    border-color: var(--accent) !important;
-    color: var(--accent-dark) !important;
-}
 button[data-testid="baseButton-primary"]:focus-visible,
 button[data-testid="stBaseButton-primary"]:focus-visible,
 button[data-testid="baseButton-primaryFormSubmit"]:focus-visible,
 button[data-testid="stBaseButton-primaryFormSubmit"]:focus-visible,
 button[data-testid="baseButton-secondary"]:focus-visible,
-button[data-testid="stBaseButton-secondary"]:focus-visible {
+button[data-testid="stBaseButton-secondary"]:focus-visible,
+button[data-testid="baseButton-secondaryFormSubmit"]:focus-visible,
+button[data-testid="stBaseButton-secondaryFormSubmit"]:focus-visible {
     box-shadow: 0 0 0 3px var(--focus) !important;
     outline: none;
+}
+/* Jaring pengaman: aturan font-size:0 dari komponen lain tidak boleh
+   menyusup ke label tombol. */
+[data-testid="stButton"] button,
+[data-testid="stFormSubmitButton"] button {
+    font-size: 0.95rem !important;
 }
 /* Tombol ajakan di hero saja: teks putih di hijau utama (4.88:1), hover dan
    active memakai hijau gelap (6.46:1). Tombol halaman lain tidak terpengaruh. */
@@ -1396,7 +1389,9 @@ _TAHAPAN_CBR = [
 
 def terapkan_tema():
     """Memasang gaya visual sekali setiap kali aplikasi dijalankan ulang."""
-    st.markdown(_CSS, unsafe_allow_html=True)
+    # st.html menyuntikkan <style> apa adanya. Lebih kanunik daripada
+    # st.markdown(unsafe_allow_html=True) pada Streamlit versi terbaru.
+    st.html(_CSS)
 
 
 def label_menu(nama):

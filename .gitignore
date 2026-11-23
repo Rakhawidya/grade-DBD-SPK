@@ -1,4 +1,23 @@
+# Python build/cache
 __pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+# Database lokal (dibuat otomatis oleh services/database.py)
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Konfigurasi & log Streamlit
 .streamlit/
+*.log
+
+# File sistem
+.DS_Store
+Thumbs.db

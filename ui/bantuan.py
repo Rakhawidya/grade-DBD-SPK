@@ -34,8 +34,7 @@ def persentase_dari_catatan(catatan, detail):
     Mengambil persentase dan nama kasus acuan dari satu catatan riwayat.
 
     Detail perbandingan dipakai bila tersedia; bila tidak, keduanya diambil
-    dari kolom ringkasan. Logika ini sebelumnya ditulis ulang di Beranda
-    dan Riwayat.
+    dari kolom ringkasan. Helper ini dipakai bersama oleh Beranda dan Riwayat.
     """
     if len(detail) > 0:
         terbaik = detail[0]

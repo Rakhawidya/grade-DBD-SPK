@@ -9,17 +9,7 @@ from ui import bantuan, tema
 from ui.helper import format_vektor
 
 
-def _persentase_terakhir(terakhir):
-    """Mengambil persentase kasus peringkat pertama dari riwayat terakhir."""
-    if terakhir is None:
-        return 0.0
-    detail = riwayat.detail_konsultasi(terakhir["id"])
-    if len(detail) > 0:
-        return detail[0]["persentase"]
-    return (terakhir["cosine_tertinggi"] or 0) * 100
-
-
-def _tampilkan_hero():
+def _tampilkan_hero(jumlah_gejala, jumlah_kasus, jumlah_pemeriksaan):
     """Area pembuka: satu ajakan jelas, satu panel ringkasan."""
     with st.container(border=True):
         kiri, kanan = st.columns([1, 1], gap="large")
@@ -44,9 +34,9 @@ def _tampilkan_hero():
                 '<div class="hero-aside">'
                 '<div class="card-kicker">Ringkasan sistem</div>'
                 + tema.meta_rows([
-                    ("Gejala terdaftar", kriteria.total_kriteria()),
-                    ("Kasus pembanding", kasus.total_kasus()),
-                    ("Pemeriksaan tercatat", riwayat.total_konsultasi()),
+                    ("Gejala terdaftar", jumlah_gejala),
+                    ("Kasus pembanding", jumlah_kasus),
+                    ("Pemeriksaan tercatat", jumlah_pemeriksaan),
                     ("Metode", "Cosine Similarity manual"),
                 ], gelap=True)
                 + "</div>",
@@ -54,12 +44,14 @@ def _tampilkan_hero():
             )
 
 
-def _tampilkan_ringkasan(terakhir, persentase):
+def _tampilkan_ringkasan(
+    terakhir, persentase, jumlah_gejala, jumlah_kasus, jumlah_pemeriksaan
+):
     nilai_terakhir = "—" if terakhir is None else f"{round(persentase, 1)} %"
     tema.stat_strip([
-        ("Pemeriksaan tercatat", riwayat.total_konsultasi(), "catatan tersimpan"),
-        ("Kasus pembanding", kasus.total_kasus(), "kasus pembanding aktif"),
-        ("Gejala terdaftar", kriteria.total_kriteria(), "gejala yang dapat dipilih"),
+        ("Pemeriksaan tercatat", jumlah_pemeriksaan, "catatan tersimpan"),
+        ("Kasus pembanding", jumlah_kasus, "kasus pembanding aktif"),
+        ("Gejala terdaftar", jumlah_gejala, "gejala yang dapat dipilih"),
         ("Kemiripan terakhir", nilai_terakhir, "dari pemeriksaan terbaru"),
     ])
 
@@ -120,15 +112,31 @@ def tampilkan():
         "baru atau lihat hasil sebelumnya.",
         eyebrow="Ringkasan sistem",
     )
-    _tampilkan_hero()
+    jumlah_gejala = kriteria.total_kriteria()
+    jumlah_kasus = kasus.total_kasus()
+    jumlah_pemeriksaan = riwayat.total_konsultasi()
+    _tampilkan_hero(jumlah_gejala, jumlah_kasus, jumlah_pemeriksaan)
 
     tema.pemisah()
     tema.quick_steps()
 
     tema.pemisah()
     terakhir = riwayat.konsultasi_terakhir()
-    persentase = _persentase_terakhir(terakhir)
-    _tampilkan_ringkasan(terakhir, persentase)
+    detail_terakhir = (
+        riwayat.detail_konsultasi(terakhir["id"]) if terakhir is not None else []
+    )
+    persentase = (
+        bantuan.persentase_dari_catatan(terakhir, detail_terakhir)[0]
+        if terakhir is not None
+        else 0.0
+    )
+    _tampilkan_ringkasan(
+        terakhir,
+        persentase,
+        jumlah_gejala,
+        jumlah_kasus,
+        jumlah_pemeriksaan,
+    )
 
     tema.pemisah()
 
@@ -147,10 +155,7 @@ def tampilkan():
         )
     else:
         tema.bagian("01", "Hasil Terakhir", "Ringkasan pemeriksaan paling baru.")
-        _tampilkan_hasil_terakhir(
-            terakhir,
-            riwayat.detail_konsultasi(terakhir["id"]),
-        )
+        _tampilkan_hasil_terakhir(terakhir, detail_terakhir)
 
     tema.pemisah()
     tema.bagian(
@@ -163,7 +168,7 @@ def tampilkan():
     tema.pemisah()
     _tampilkan_riwayat_singkat()
 
-    if riwayat.total_konsultasi() > 0:
+    if jumlah_pemeriksaan > 0:
         st.button(
             "Lihat Semua Riwayat",
             on_click=bantuan.buka_menu,

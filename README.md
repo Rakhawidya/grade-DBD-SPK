@@ -59,7 +59,7 @@ Flag `--server.enableAgentApi true` wajib agar skrip bisa memakai endpoint
 sehingga skrip e2e membaca label tampilan (mis. `02   Cek Gejala`) melalui
 fungsi `pilihan_menu()`, bukan nilai radio mentahnya.
 
-50 pengujian mencakup: dot product, rincian perkalian, jumlah kuadrat,
+51 pengujian mencakup: dot product, rincian perkalian, jumlah kuadrat,
 panjang vektor, cosine similarity, vektor nol, jumlah atribut berbeda,
 penentuan kasus terdekat, peringkat, CRUD database, validasi, alur pemeriksaan
 lengkap (Retrieve → Reuse → Revise → Retain), identitas CEKDBD, tombol
@@ -70,7 +70,7 @@ perpindahan menu, dan render setiap halaman lewat AppTest Streamlit.
 ## 3. Struktur Project
 
 ```
-spk-db/
+CekDBD/
 ├── app.py                     # Entry point Streamlit + navigasi sidebar
 ├── cbr.py                     # KODE ACUAN dari dosen (tidak diubah)
 │
@@ -90,7 +90,14 @@ spk-db/
 │   ├── konsultasi.py          #   Cek Gejala: data → gejala → hasil → tinjau → simpan
 │   ├── riwayat.py             #   arsip pemeriksaan + kartu rincian
 │   ├── tema.py                #   design system, brand, stepper, gauge, kartu
-│   └── helper.py              #   tabel dan format angka untuk tampilan
+│   ├── helper.py              #   tabel dan format angka untuk tampilan
+│   └── bantuan.py             #   komponen bersama + callback navigasi
+│
+├── assets/
+│   └── favicon.svg            #   Ikon tab browser
+│
+├── laporan_assets/
+│   └── diagram_alur_cekdbd.png
 │
 ├── tests/                     # ===== PENGUJIAN =====
 │   ├── test_perhitungan.py    #   unit test matematika CBR
@@ -98,8 +105,10 @@ spk-db/
 │   └── test_ui.py             #   test render + alur lewat AppTest
 │
 ├── uji_end_to_end.py          # Uji HTTP ke server Streamlit yang berjalan
+├── Laporan_Praktikum_SPK_CekDBD_Rakha.docx
+├── DOKUMENTASI.md             # Dokumentasi lengkap untuk sidang
 ├── requirements.txt
-└── DOKUMENTASI.md             # Dokumentasi lengkap untuk sidang
+└── .gitignore
 ```
 
 > Halaman manajemen kasus dan kriteria sengaja tidak disertakan. Data awal
@@ -160,7 +169,7 @@ Perhitungan tetap transparan dan bisa dijelaskan baris per baris.
 
 | Library | Alasan |
 |---|---|
-| **Streamlit** | Framework web Python paling sederhana untuk aplikasi dinamis; cukup fungsi Python biasa |
+| **Streamlit ≥1.50** | Framework web Python paling sederhana untuk aplikasi dinamis; versi ini diperlukan untuk `st.html()` dan `st.dataframe(width=...)` |
 | **sqlite3** (bawaan Python) | Database relasional tanpa perlu instal server |
 | **json** (bawaan Python) | Menyimpan vektor input pada riwayat |
 | **unittest** (bawaan Python) | Pengujian tanpa library tambahan |
@@ -175,3 +184,7 @@ Streamlit untuk tampilan — kode project tidak mengimpornya.)
 
 Baca **[DOKUMENTASI.md](DOKUMENTASI.md)** untuk penjelasan arsitektur, rumus
 Cosine Similarity, alur CBR, dan panduan menjelaskan project ke dosen.
+
+Laporan praktikum tersedia dalam versi
+**[DOCX](Laporan_Praktikum_SPK_CekDBD_Rakha.docx)**. Sumber diagram alurnya ada
+di `laporan_assets/diagram_alur_cekdbd.png`.
