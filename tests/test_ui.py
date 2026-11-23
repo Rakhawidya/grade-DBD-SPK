@@ -13,6 +13,7 @@ from streamlit.testing.v1 import AppTest
 
 from core import cbr
 from services import database, kasus, kriteria, riwayat
+from ui import tema
 
 APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
 
@@ -50,6 +51,29 @@ class TestHalamanRender(unittest.TestCase):
 
         opsi = [str(o) for o in at.sidebar.radio[0].options]
         self.assertEqual(opsi, ["01   Beranda", "02   Cek Gejala", "03   Riwayat"])
+
+    def test_label_menu_dan_nilai_radio_mentah(self):
+        """Label tampilan dan nilai radio adalah dua kontrak yang berbeda."""
+        self.assertEqual(tema.label_menu("Beranda"), "01   Beranda")
+        self.assertEqual(tema.label_menu("Cek Gejala"), "02   Cek Gejala")
+        self.assertEqual(tema.label_menu("Riwayat"), "03   Riwayat")
+
+        at = jalankan_app("Beranda")
+        radio = at.sidebar.radio[0]
+        self.assertEqual(radio.value, "Beranda")
+        self.assertEqual(
+            [str(o) for o in radio.options],
+            ["01   Beranda", "02   Cek Gejala", "03   Riwayat"],
+        )
+
+    def test_kunci_sesi_navigasi_tombol_mulai(self):
+        at = jalankan_app("Beranda")
+        self.assertEqual(at.session_state["halaman_tujuan"], "Beranda")
+        tombol = [b for b in at.button if "Mulai Pemeriksaan" in str(b.label)][0]
+        tombol.click().run()
+        self.assertEqual(len(at.exception), 0, at.exception)
+        self.assertEqual(at.sidebar.radio[0].value, "Cek Gejala")
+        self.assertEqual(at.session_state["halaman_tujuan"], "Cek Gejala")
 
     def test_tombol_mulai_memindah_ke_cek_gejala(self):
         at = jalankan_app("Beranda")
@@ -114,7 +138,7 @@ class TestAlurPemeriksaanDiUI(unittest.TestCase):
         self.assertEqual(len(at.exception), 0, at.exception)
         pesan = [str(s.value) for s in at.success]
         self.assertTrue(
-            any("Rekomendasi diterima" in p or "Koreksi tersimpan" in p for p in pesan),
+            any("Rekomendasi diterima" in p for p in pesan),
             pesan,
         )
 

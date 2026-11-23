@@ -9,14 +9,8 @@ Dengan begitu, menambah kriteria baru di masa depan tidak mengubah
 struktur tabel kasus.
 """
 
-import datetime
-
-from services.database import koneksi
+from services.database import hitung_baris, koneksi, waktu_sekarang
 from services.kriteria import daftar_kriteria
-
-
-def _waktu_sekarang():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _baca_nilai(k, kasus_id):
@@ -80,7 +74,7 @@ def tambah_kasus(nama, solusi, keterangan, nilai, db_path=None):
         kursor = k.execute(
             "INSERT INTO kasus (nama, solusi, keterangan, dibuat_pada) "
             "VALUES (?, ?, ?, ?)",
-            (nama, solusi, keterangan, _waktu_sekarang()),
+            (nama, solusi, keterangan, waktu_sekarang()),
         )
         kasus_id = kursor.lastrowid
 
@@ -135,4 +129,4 @@ def hapus_kasus(kasus_id, db_path=None):
 
 def total_kasus(db_path=None):
     with koneksi(db_path) as k:
-        return k.execute("SELECT COUNT(*) AS jml FROM kasus").fetchone()["jml"]
+        return hitung_baris(k, "kasus")

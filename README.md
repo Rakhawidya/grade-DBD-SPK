@@ -59,7 +59,7 @@ Flag `--server.enableAgentApi true` wajib agar skrip bisa memakai endpoint
 sehingga skrip e2e membaca label tampilan (mis. `02   Cek Gejala`) melalui
 fungsi `pilihan_menu()`, bukan nilai radio mentahnya.
 
-47 pengujian mencakup: dot product, rincian perkalian, jumlah kuadrat,
+50 pengujian mencakup: dot product, rincian perkalian, jumlah kuadrat,
 panjang vektor, cosine similarity, vektor nol, jumlah atribut berbeda,
 penentuan kasus terdekat, peringkat, CRUD database, validasi, alur pemeriksaan
 lengkap (Retrieve → Reuse → Revise → Retain), identitas CEKDBD, tombol

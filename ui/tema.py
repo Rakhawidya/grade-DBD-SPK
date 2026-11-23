@@ -20,25 +20,49 @@ _CSS = """
     /* Mode terang dipaksa, termasuk saat perangkat memakai tema gelap. */
     color-scheme: light only;
 
-    /* Warna */
-    --bg: #f5f6f4;
+    /* Warna: stone hangat + pine gelap + teal + satu aksen tanah liat. */
+    --bg: #f5f3ee;
     --surface: #ffffff;
-    --surface-alt: #fbfcfa;
-    --ink: #17231f;
-    --muted: #5f6e68;
-    --line: #e2e8e4;
-    --line-soft: #edf1ee;
-    --accent: #176b56;
-    --accent-dark: #0f523f;
-    --accent-soft: #e9f4ef;
-    /* Satu warna peringatan saja. Gelap agar teks lulus WCAG AA di atas putih. */
-    --warning: #8f5716;
-    --warning-dark: #74430f;
-    --warning-soft: #fbf1e3;
-    --warning-line: #e8d2b4;
-    --focus: rgba(23, 107, 86, 0.22);
-    --focus-warning: rgba(143, 87, 22, 0.24);
-    --hover: #f0f4f1;
+    --surface-alt: #faf9f5;
+    --surface-deep: #0d2e28;
+    --surface-deep-2: #123c34;
+    --ink: #12251f;
+    --muted: #5f6b64;
+    --line: #e1e3da;
+    --line-soft: #eeefe9;
+    --accent: #0d6b58;
+    --accent-dark: #084b3e;
+    --accent-soft: #e3f0ea;
+    --accent-wash: #f2f7f3;
+    --accent-bright: #8ed2bd;
+    /* Teks di atas panel pine. */
+    --deep-ink: #f4faf7;
+    --deep-muted: #c5d7cf;
+    --deep-line: rgba(255, 255, 255, 0.16);
+    --gauge-track: #e8ebe5;
+    /* Satu warna peringatan saja: clay, lebih hangat dari kuning atau merah. */
+    --warning: #a5532e;
+    --warning-dark: #7e3c20;
+    --warning-soft: #fbede6;
+    --warning-line: #ebd0c0;
+    /* Turunan warna yang dipakai berulang. */
+    --white: var(--surface);
+    --focus: rgba(13, 107, 88, 0.22);
+    --hover: #f0f2ec;
+    --brand-mark-border: rgba(142, 210, 189, 0.45);
+    --brand-mark-shadow: 0 6px 14px rgba(8, 76, 63, 0.30);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --button-shadow: 0 6px 14px rgba(8, 76, 63, 0.18);
+    /* Hero Beranda: palet yang ditentukan, dengan rasio kontras WCAG AA.
+       Teks utama 11.93:1, teks sekunder 5.40:1, tombol putih 4.88:1. */
+    --hero-bg: #e8f3ef;
+    --hero-line: #0b8068;
+    --hero-ink: #18332d;
+    --hero-copy: #52665f;
+    --hero-accent: #0b8068;
+    --hero-accent-dark: #086b57;
+    --hero-cream: #f8f7f2;
+    --hero-focus: rgba(11, 128, 104, 0.32);
 
     /* Ruang */
     --space-1: 0.25rem;
@@ -47,25 +71,32 @@ _CSS = """
     --space-4: 1rem;
     --space-5: 1.5rem;
     --space-6: 2rem;
+    --space-7: 2.75rem;
 
-    /* Radius & bayangan */
+    /* Ukuran kotak yang dipakai bersama agar panel dan kartu seragam. */
+    --panel-min-h: 350px;
+    --panel-col-min-h: 300px;
+    --card-min-h: 132px;
+
+    /* Radius & bayangan: sengaja dikunci agar tidak terlihat seperti template. */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-pill: 999px;
-    --shadow-sm: 0 1px 2px rgba(23, 35, 31, 0.05);
-    --shadow-md: 0 10px 28px rgba(23, 35, 31, 0.07);
+    --shadow-sm: 0 1px 2px rgba(18, 37, 31, 0.06);
+    --shadow-md: 0 12px 28px rgba(18, 37, 31, 0.10);
+    --shadow-deep: 0 14px 32px rgba(13, 46, 40, 0.18);
 
     /* Tipografi */
     --font-ui: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
     --font-display: Georgia, "Times New Roman", serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-    --text-xs: 0.72rem;
-    --text-sm: 0.82rem;
-    --text-md: 0.95rem;
-    --text-lg: 1.1rem;
-    --text-xl: 1.45rem;
-    --text-2xl: 2.05rem;
+    --text-xs: 0.78rem;
+    --text-sm: 0.88rem;
+    --text-md: 0.96rem;
+    --text-lg: 1.12rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 2rem;
 }
 
 /* ---------- Dasar ---------- */
@@ -73,14 +104,18 @@ html, body, [class*="css"] {
     font-family: var(--font-ui);
 }
 html, body {
-    background: var(--bg);
-    color: var(--ink);
+    background: var(--bg) !important;
+    color: var(--ink) !important;
 }
-/* Selector internal Streamlit: aplikasi root. */
-[data-testid="stApp"] { color-scheme: light only; }
+/* Selector internal Streamlit: aplikasi root. `!important` diperlukan karena
+   tema gelap Streamlit disuntikkan setelah gaya ini. */
+[data-testid="stApp"] {
+    background: var(--bg) !important;
+    color-scheme: light only !important;
+}
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"] {
-    background: var(--bg);
+    background: var(--bg) !important;
 }
 
 /* Streamlit mewarisi warna sistem. Kunci ke palet terang agar teks tidak
@@ -97,20 +132,25 @@ html, body {
 
 .block-container {
     max-width: 1180px;
-    padding-top: 2.1rem;
+    padding-top: 2.4rem;
     padding-bottom: var(--space-6);
 }
+/* Selector internal Streamlit: kolom dalam satu baris ikut merentang supaya
+   panel di dalamnya bisa memiliki tinggi yang sama. */
+[data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { align-self: stretch; }
+[data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div { height: 100%; }
 
 h1 {
     color: var(--ink) !important;
+    font-family: var(--font-display);
     font-size: var(--text-2xl) !important;
     font-weight: 700 !important;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.03em;
     margin: var(--space-2) 0 var(--space-3) !important;
 }
 h2 {
     color: var(--ink) !important;
-    font-size: 1.08rem !important;
+    font-size: var(--text-lg) !important;
     font-weight: 700 !important;
     letter-spacing: -0.01em;
     margin: var(--space-3) 0 var(--space-2) !important;
@@ -123,99 +163,265 @@ h3 {
 p, li { line-height: 1.65; }
 
 /* ---------- Sidebar ---------- */
-/* Selector internal Streamlit: sidebar dan radio navigasi. */
+/* Selector internal Streamlit: sidebar, radio navigasi, dan konten user. */
 [data-testid="stSidebar"] {
-    background: var(--surface-alt);
+    background: var(--surface-alt) !important;
     border-right: 1px solid var(--line);
     color-scheme: light only;
 }
 [data-testid="stSidebar"] * { color: var(--ink) !important; }
-[data-testid="stSidebar"] [role="radiogroup"] label {
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.55rem 0.7rem;
-    transition: background 0.15s ease, color 0.15s ease;
+[data-testid="stSidebarUserContent"] {
+    padding: 0.9rem 0.9rem 1.1rem !important;
 }
-[data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    background: var(--hover);
-}
-/* Opsi aktif ditandai aria-checked oleh Streamlit. */
-[data-testid="stSidebar"] [role="radio"][aria-checked="true"],
-[data-testid="stSidebar"] label:has(input:checked) {
-    background: var(--accent-soft) !important;
-    box-shadow: inset 3px 0 0 var(--accent);
-    color: var(--accent-dark) !important;
-}
-[data-testid="stSidebar"] hr { border-color: var(--line) !important; }
 
+/* Identitas aplikasi: kartu pine kecil di puncak sidebar. */
 .brand {
-    align-items: center;
-    border-bottom: 1px solid var(--line);
-    display: flex;
-    gap: var(--space-3);
+    background: var(--surface-deep);
+    border: 1px solid var(--surface-deep-2);
+    border-radius: var(--radius-lg);
+    color: var(--deep-ink) !important;
     margin-bottom: var(--space-5);
-    padding: var(--space-1) var(--space-1) var(--space-4);
+    overflow: hidden;
+    padding: var(--space-4);
+    position: relative;
 }
+/* Garis atas pada kartu identitas dan panel ringkasan memakai geometri yang
+   sama; warnanya sengaja dipisah supaya masing-masing mengikuti konteksnya. */
+.brand::before,
+.hero-aside::before {
+    content: "";
+    height: 3px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+.brand::before { background: var(--accent-bright); }
+.brand * { color: inherit !important; }
+.brand-head { align-items: center; display: flex; gap: var(--space-3); }
 .brand-mark {
     align-items: center;
     background: var(--accent);
-    border-radius: 10px;
-    box-shadow: var(--shadow-sm);
-    color: #ffffff !important;
+    border: 1px solid var(--brand-mark-border);
+    border-radius: 11px;
+    box-shadow: var(--brand-mark-shadow);
+    color: var(--white) !important;
     display: inline-flex;
-    flex: 0 0 38px;
+    flex: 0 0 42px;
     font-family: var(--font-display);
-    font-size: 1.55rem;
-    height: 38px;
+    font-size: 1.65rem;
+    height: 42px;
     justify-content: center;
     line-height: 1;
 }
-.brand-name {
-    color: var(--ink) !important;
-    font-family: var(--font-display);
-    font-size: 1.32rem;
+.brand-eyebrow {
+    color: var(--accent-bright) !important;
+    font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+.brand-name {
+    color: var(--deep-ink) !important;
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
     line-height: 1.1;
+    margin-top: 2px;
 }
 .brand-tag {
-    color: var(--muted) !important;
+    border-top: 1px solid var(--deep-line);
+    color: var(--deep-muted) !important;
     font-size: var(--text-xs);
-    line-height: 1.35;
-    margin-top: var(--space-1);
+    line-height: 1.5;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
 }
+.brand-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.brand-chip {
+    background: var(--chip-bg);
+    border: 1px solid var(--deep-line);
+    border-radius: var(--radius-pill);
+    color: var(--deep-muted) !important;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.16rem 0.5rem;
+    text-transform: uppercase;
+}
+.brand-chip:first-child { color: var(--accent-bright) !important; }
+
+/* Navigasi: nomor dan nama dirender ulang lewat pseudo-element agar
+   tetap rapi, tetapi nilai radio asli tidak diubah. */
+[data-testid="stRadioGroup"]::before {
+    color: var(--muted) !important;
+    content: "MENU UTAMA";
+    display: block;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    margin: 0 0 var(--space-2) var(--space-1);
+}
+/* Radio group Streamlit memakai flex column yang menyusut mengikuti panjang
+   teks. Paksa stretch agar ketiga menu memakai lebar penuh sidebar, sehingga
+   tepi kiri/kanan sejajar baik saat aktif maupun tidak aktif. */
+[data-testid="stRadioGroup"] {
+    align-items: stretch !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+[data-testid="stRadioGroup"] > div {
+    box-sizing: border-box !important;
+    margin-bottom: var(--space-2);
+    width: 100% !important;
+}
+[data-testid="stRadioOption"] {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-sizing: border-box !important;
+    cursor: pointer;
+    display: block;
+    min-height: 3.125rem;
+    padding: 0.6rem 0.7rem;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                transform 0.15s ease;
+    width: 100% !important;
+}
+[data-testid="stRadioOption"]:hover {
+    border-color: var(--accent);
+    transform: translateX(2px);
+}
+/* Sembunyikan indikator radio bawaan Streamlit. */
+[data-testid="stRadioOption"] > div > div:first-child { display: none !important; }
+[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p {
+    align-items: center;
+    color: var(--ink) !important;
+    display: flex;
+    font-size: 0 !important;
+    gap: var(--space-3);
+    margin: 0;
+}
+[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p::before {
+    align-items: center;
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    color: var(--muted) !important;
+    content: "00";
+    display: inline-flex;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    height: 28px;
+    justify-content: center;
+    letter-spacing: 0;
+    width: 30px;
+}
+[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p::after {
+    color: var(--ink) !important;
+    content: "Menu";
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+[data-testid="stRadioGroup"] > div:nth-child(1) p::before { content: "01"; }
+[data-testid="stRadioGroup"] > div:nth-child(1) p::after { content: "Beranda"; }
+[data-testid="stRadioGroup"] > div:nth-child(2) p::before { content: "02"; }
+[data-testid="stRadioGroup"] > div:nth-child(2) p::after { content: "Cek Gejala"; }
+[data-testid="stRadioGroup"] > div:nth-child(3) p::before { content: "03"; }
+[data-testid="stRadioGroup"] > div:nth-child(3) p::after { content: "Riwayat"; }
+
+[data-testid="stRadioOption"][data-selected="true"] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+}
+[data-testid="stRadioOption"][data-selected="true"] p::before {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--white) !important;
+}
+[data-testid="stRadioOption"][data-selected="true"] p::after {
+    color: var(--accent-dark) !important;
+}
+[data-testid="stRadioOption"]:focus-visible {
+    box-shadow: 0 0 0 3px var(--focus);
+    outline: none;
+}
+[data-testid="stSidebar"] hr { border-color: var(--line) !important; }
+/* Label radio tetap ada di DOM untuk pembaca layar dan pengujian, tetapi
+   tidak ditampilkan dua kali karena navigasi sudah punya kicker MENU UTAMA. */
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+    border: 0 !important;
+    clip: rect(0, 0, 0, 0) !important;
+    height: 1px !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    white-space: nowrap !important;
+    width: 1px !important;
+}
+
+/* Kartu informasi kecil di bawah navigasi. */
 .side-note {
-    border-top: 1px solid var(--line);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     color: var(--muted) !important;
     font-size: var(--text-xs);
     line-height: 1.6;
     margin-top: var(--space-4);
-    padding-top: var(--space-3);
+    padding: var(--space-4);
 }
-.side-note b { color: var(--ink) !important; }
+.side-note-title {
+    color: var(--accent-dark) !important;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.side-note-title--jarak { margin-top: var(--space-3); }
+.side-note-copy { margin-top: var(--space-1); }
 
 /* ---------- Header halaman ---------- */
 .eyebrow {
-    color: var(--accent) !important;
+    align-items: center;
+    color: var(--accent-dark) !important;
+    display: inline-flex;
     font-size: var(--text-xs);
     font-weight: 700;
+    gap: var(--space-2);
     letter-spacing: 0.18em;
     text-transform: uppercase;
+}
+.eyebrow::before {
+    background: var(--accent);
+    border-radius: var(--radius-pill);
+    content: "";
+    height: 2px;
+    width: 20px;
 }
 .lead {
     color: var(--muted) !important;
     font-size: var(--text-md);
     margin: var(--space-1) 0 var(--space-5);
-    max-width: 760px;
+    max-width: 74ch;
 }
 .section-number {
-    color: var(--accent) !important;
+    background: var(--accent-wash);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--accent-dark) !important;
+    display: inline-block;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.12em;
-    margin-bottom: var(--space-1);
+    margin-bottom: var(--space-2);
+    padding: 0.15rem 0.55rem;
 }
 .card-kicker {
     color: var(--muted) !important;
@@ -241,66 +447,155 @@ p, li { line-height: 1.65; }
     background: var(--line);
     border: 0;
     height: 1px;
-    margin: var(--space-5) 0;
+    margin: var(--space-4) 0;
 }
 
 /* ---------- Permukaan, form, tabel ---------- */
-/* Selector internal Streamlit: container bordered, form, expander, dataframe. */
-[data-testid="stVerticalBlockBorderWrapper"] {
+/* Selector internal Streamlit: pada versi ini `st.container(border=True)`
+   dirender sebagai `stVerticalBlock` dengan `data-test-wrap="false"`. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"] {
     background: var(--surface);
     border: 1px solid var(--line) !important;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-lg) !important;
     box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+    min-height: var(--panel-min-h);
+    padding: var(--space-5) !important;
+}
+/* Isi panel ikut merentang supaya tinggi minimum benar-benar terlihat. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"] > [data-testid="stLayoutWrapper"] {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+/* Kolom utama di dalam panel memakai tinggi minimum yang sama, sehingga
+   panel dua kolom tidak ada yang lebih pendek hanya karena isinya sedikit. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"] > [data-testid="stLayoutWrapper"] > [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div[data-testid="stVerticalBlock"] {
+    min-height: var(--panel-col-min-h);
+}
+/* Panel pembuka: hijau lembut dengan garis hijau utama, tanpa gradient.
+   Semua aturan di sini hanya berlaku untuk panel yang memuat .hero-title. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) {
+    background: var(--hero-bg) !important;
+    border-color: var(--hero-line) !important;
+    box-shadow: inset 0 3px 0 var(--hero-accent), var(--shadow-sm) !important;
+    padding: var(--space-6) !important;
+}
+/* Label "Mulai dari sini" dibentuk sebagai pill kecil agar konsisten dengan
+   penomor bagian, tanpa mengubah .card-kicker yang dipakai halaman lain.
+   Kicker pada panel ringkasan gelap sengaja dikecualikan agar kontrasnya
+   dijaga oleh aturan .hero-aside tersendiri. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) .card-kicker:not(.hero-aside .card-kicker) {
+    background: var(--hero-cream);
+    border: 1px solid var(--hero-line);
+    border-radius: var(--radius-pill);
+    color: var(--hero-accent-dark) !important;
+    display: inline-flex;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    margin-bottom: var(--space-4);
+    padding: 0.28rem 0.7rem;
+}
+/* Keterangan singkat di bawah tombol mengikuti warna teks sekunder hero. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) [data-testid="stCaptionContainer"] p {
+    color: var(--hero-copy) !important;
 }
 [data-testid="stForm"] {
-    background: var(--surface);
+    background: var(--surface-alt);
     border: 1px solid var(--line) !important;
     border-radius: var(--radius-md);
     padding: var(--space-5) !important;
 }
 [data-testid="stExpander"] {
+    background: var(--surface);
     border: 1px solid var(--line) !important;
     border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
 [data-testid="stExpander"] summary {
     color: var(--ink) !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
 }
 [data-testid="stDataFrame"] {
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     max-width: 100%;
     overflow-x: auto;
 }
+/* Notifikasi mengikuti palet aplikasi. Streamlit memakai `kind` pada baseweb;
+   dua bentuk selector dipakai agar versi lama dan baru tetap tertimpa. */
 [data-testid="stAlert"] {
+    background: var(--accent-wash) !important;
     border: 1px solid var(--line) !important;
+    border-left: 3px solid var(--accent) !important;
     border-radius: var(--radius-md) !important;
+    color: var(--ink) !important;
     font-size: var(--text-sm);
 }
-/* Selector internal Streamlit: kind dipakai baseweb pada notifikasi. */
-[data-testid="stAlert"]:has([kind="success"]) {
-    border-left: 3px solid var(--accent) !important;
+[data-testid="stAlert"] > div { background: transparent !important; }
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] li,
+[data-testid="stAlert"] [data-testid="stMarkdownContainer"] {
+    color: inherit !important;
 }
+[data-testid="stAlert"] svg { color: var(--accent) !important; }
 [data-testid="stAlert"]:has([kind="warning"]),
 [data-testid="stAlert"]:has([kind="danger"]),
-[data-testid="stAlert"]:has([kind="error"]) {
-    border-left: 3px solid var(--warning) !important;
+[data-testid="stAlert"]:has([kind="error"]),
+[data-testid="stAlert"][kind="warning"],
+[data-testid="stAlert"][kind="danger"],
+[data-testid="stAlert"][kind="error"] {
+    background: var(--warning-soft) !important;
+    border-left-color: var(--warning) !important;
+    color: var(--warning-dark) !important;
+}
+[data-testid="stAlert"]:has([kind="warning"]) svg,
+[data-testid="stAlert"]:has([kind="danger"]) svg,
+[data-testid="stAlert"]:has([kind="error"]) svg,
+[data-testid="stAlert"][kind="warning"] svg,
+[data-testid="stAlert"][kind="danger"] svg,
+[data-testid="stAlert"][kind="error"] svg { color: var(--warning) !important; }
+/* Spinner memakai primaryColor Streamlit secara default; paksa ke aksen tea. */
+[data-testid="stSpinner"] svg {
+    color: var(--accent) !important;
+    stroke: var(--accent) !important;
+}
+[data-testid="stSpinner"] [data-testid="stSpinnerIcon"] {
+    border-right-color: var(--accent) !important;
+    border-top-color: var(--accent) !important;
 }
 
-div[data-testid="stMetric"] {
-    background: var(--surface);
+/* Angka ringkasan dirangkai sebagai satu strip, bukan sekumpulan kartu.
+   Widget st.metric tetap dipakai supaya nilai terbaca oleh tooling dan
+   pembaca layar; hanya kulit visualnya yang disatukan di sini. */
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) {
+    background: var(--line-soft);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    padding: 0.85rem var(--space-4);
-    transition: border-color 0.15s ease, transform 0.15s ease;
+    gap: 1px !important;
+    overflow: hidden;
 }
-div[data-testid="stMetric"]:hover {
-    border-color: var(--accent);
-    transform: translateY(-1px);
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > [data-testid="stColumn"] {
+    background: var(--surface);
 }
-div[data-testid="stMetric"]::before { display: none; }
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > [data-testid="stColumn"]:not(:last-child) {
+    border-right: 1px solid var(--line-soft);
+}
+div[data-testid="stMetric"] {
+    background: transparent;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: var(--card-min-h);
+    padding: var(--space-4);
+}
 div[data-testid="stMetricLabel"] p {
     color: var(--muted) !important;
     font-size: var(--text-sm) !important;
@@ -308,53 +603,203 @@ div[data-testid="stMetricLabel"] p {
 }
 div[data-testid="stMetricValue"] {
     color: var(--ink) !important;
+    font-family: var(--font-display);
     font-size: 1.65rem !important;
     font-weight: 700 !important;
     font-variant-numeric: tabular-nums;
+    line-height: 1.2;
 }
 
 /* ---------- Tombol ---------- */
-/* Selector internal Streamlit: baseButton. */
-button[data-testid="baseButton-primary"] {
-    background: var(--accent) !important;
-    border: none !important;
+/* Selector internal Streamlit: versi lama memakai `baseButton-*`, versi baru
+   memakai `stBaseButton-*`. Form submit primary memakai testid
+   `primaryFormSubmit`, jadi ikut dicakup supaya tidak jatuh ke merah bawaan. */
+button[data-testid="baseButton-primary"],
+button[data-testid="stBaseButton-primary"],
+button[data-testid="baseButton-primaryFormSubmit"],
+button[data-testid="stBaseButton-primaryFormSubmit"] {
+    background: var(--accent-dark) !important;
+    border: 1px solid var(--accent-dark) !important;
     border-radius: var(--radius-sm) !important;
-    box-shadow: var(--shadow-sm) !important;
-    font-weight: 600 !important;
-    padding: 0.55rem 1.05rem !important;
-    transition: background 0.15s ease, transform 0.08s ease;
+    box-shadow: var(--button-shadow) !important;
+    color: var(--white) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    min-height: 44px;
+    padding: 0.6rem 1.15rem !important;
+    transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
-button[data-testid="baseButton-primary"]:hover { background: var(--accent-dark) !important; }
-button[data-testid="baseButton-primary"]:active { transform: translateY(1px); }
-button[data-testid="baseButton-secondary"] {
+/* Metrik form submit disamakan dengan tombol primary biasa. */
+button[data-testid="baseButton-primaryFormSubmit"],
+button[data-testid="stBaseButton-primaryFormSubmit"] {
+    font-size: 0.9rem !important;
+}
+button[data-testid="baseButton-primary"]:hover,
+button[data-testid="stBaseButton-primary"]:hover,
+button[data-testid="baseButton-primaryFormSubmit"]:hover,
+button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
+    background: var(--surface-deep) !important;
+    border-color: var(--surface-deep) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+button[data-testid="baseButton-primary"]:active,
+button[data-testid="stBaseButton-primary"]:active,
+button[data-testid="baseButton-primaryFormSubmit"]:active,
+button[data-testid="stBaseButton-primaryFormSubmit"]:active { transform: translateY(1px); }
+/* Tombol sedang memuat tetap paling mirip primary, tanpa bayangan/efek aktif. */
+button[data-testid="baseButton-primary"]:disabled,
+button[data-testid="stBaseButton-primary"]:disabled,
+button[data-testid="baseButton-primaryFormSubmit"]:disabled,
+button[data-testid="stBaseButton-primaryFormSubmit"]:disabled {
+    background: var(--accent-soft) !important;
+    border-color: var(--line) !important;
+    box-shadow: none !important;
+    color: var(--muted) !important;
+    cursor: not-allowed;
+    transform: none;
+}
+button[data-testid="baseButton-secondary"],
+button[data-testid="stBaseButton-secondary"] {
+    background: var(--surface) !important;
     border: 1px solid var(--line) !important;
     border-radius: var(--radius-sm) !important;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    color: var(--ink) !important;
+    min-height: 44px;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-button[data-testid="baseButton-secondary"]:hover {
+button[data-testid="baseButton-secondary"]:hover,
+button[data-testid="stBaseButton-secondary"]:hover {
     border-color: var(--accent) !important;
     color: var(--accent-dark) !important;
 }
 button[data-testid="baseButton-primary"]:focus-visible,
-button[data-testid="baseButton-secondary"]:focus-visible {
+button[data-testid="stBaseButton-primary"]:focus-visible,
+button[data-testid="baseButton-primaryFormSubmit"]:focus-visible,
+button[data-testid="stBaseButton-primaryFormSubmit"]:focus-visible,
+button[data-testid="baseButton-secondary"]:focus-visible,
+button[data-testid="stBaseButton-secondary"]:focus-visible {
     box-shadow: 0 0 0 3px var(--focus) !important;
     outline: none;
 }
-/* CTA di hero sedikit lebih besar dari tombol biasa. */
-.hero-actions [data-testid="stButton"] button {
-    padding: 0.7rem 1.3rem !important;
+/* Tombol ajakan di hero saja: teks putih di hijau utama (4.88:1), hover dan
+   active memakai hijau gelap (6.46:1). Tombol halaman lain tidak terpengaruh. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) [data-testid="stButton"] button {
+    background: var(--hero-accent) !important;
+    border: 1px solid var(--hero-accent) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    color: var(--white) !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    min-height: 46px !important;
+    padding: 0.72rem 1.35rem !important;
+    transition: background 0.18s ease, border-color 0.18s ease,
+                box-shadow 0.18s ease, transform 0.12s ease !important;
 }
-
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) [data-testid="stButton"] button:hover {
+    background: var(--hero-accent-dark) !important;
+    border-color: var(--hero-accent-dark) !important;
+    box-shadow: 0 2px 6px rgba(8, 107, 87, 0.18) !important;
+    transform: translateY(-1px);
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) [data-testid="stButton"] button:active {
+    background: var(--hero-accent-dark) !important;
+    border-color: var(--hero-accent-dark) !important;
+    box-shadow: inset 0 2px 4px rgba(24, 51, 45, 0.20) !important;
+    transform: translateY(1px);
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) [data-testid="stButton"] button:focus-visible {
+    box-shadow: 0 0 0 6px var(--hero-focus) !important;
+    outline: 2px solid var(--hero-accent-dark) !important;
+    outline-offset: 3px;
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) [data-testid="stButton"] button:disabled {
+    background: var(--hero-cream) !important;
+    border-color: var(--hero-line) !important;
+    box-shadow: none !important;
+    color: var(--hero-copy) !important;
+    cursor: not-allowed;
+    outline: none;
+    transform: none;
+}
+/* Tombol "Lanjut" pada langkah 1 Cek Gejala memakai palet yang sama persis
+   dengan tombol "Mulai Pemeriksaan" di Beranda. Penanda .tombol-ajakan hanya
+   jadi jangkar :has(), jadi aturan ini tidak menyentuh tombol lain di panel. */
+.tombol-ajakan { display: none; }
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) [data-testid="stFormSubmitButton"] button,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="baseButton-primaryFormSubmit"],
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="stBaseButton-primaryFormSubmit"] {
+    background: var(--hero-accent) !important;
+    border: 1px solid var(--hero-accent) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    color: var(--white) !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    min-height: 46px !important;
+    padding: 0.72rem 1.35rem !important;
+    transition: background 0.18s ease, border-color 0.18s ease,
+                box-shadow 0.18s ease, transform 0.12s ease !important;
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) [data-testid="stFormSubmitButton"] button:hover,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="baseButton-primaryFormSubmit"]:hover,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
+    background: var(--hero-accent-dark) !important;
+    border-color: var(--hero-accent-dark) !important;
+    box-shadow: 0 2px 6px rgba(8, 107, 87, 0.18) !important;
+    transform: translateY(-1px);
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) [data-testid="stFormSubmitButton"] button:active,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="baseButton-primaryFormSubmit"]:active,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="stBaseButton-primaryFormSubmit"]:active {
+    background: var(--hero-accent-dark) !important;
+    border-color: var(--hero-accent-dark) !important;
+    box-shadow: inset 0 2px 4px rgba(24, 51, 45, 0.20) !important;
+    transform: translateY(1px);
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) [data-testid="stFormSubmitButton"] button:focus-visible,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="baseButton-primaryFormSubmit"]:focus-visible,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="stBaseButton-primaryFormSubmit"]:focus-visible {
+    box-shadow: 0 0 0 6px var(--hero-focus) !important;
+    outline: 2px solid var(--hero-accent-dark) !important;
+    outline-offset: 3px;
+}
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) [data-testid="stFormSubmitButton"] button:disabled,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="baseButton-primaryFormSubmit"]:disabled,
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.tombol-ajakan) button[data-testid="stBaseButton-primaryFormSubmit"]:disabled {
+    background: var(--hero-cream) !important;
+    border-color: var(--hero-line) !important;
+    box-shadow: none !important;
+    color: var(--hero-copy) !important;
+    cursor: not-allowed;
+    outline: none;
+    transform: none;
+}
 /* ---------- Input & fokus ---------- */
 /* Selector internal Streamlit: baseweb dipakai input/textarea/checkbox. */
 [data-testid="stCheckbox"] label { cursor: pointer; }
+[data-testid="stCheckbox"] label:hover {
+    background: var(--hover);
+    border-radius: var(--radius-sm);
+}
 [data-testid="stTextInput"] input,
 [data-testid="stTextArea"] textarea {
     border-radius: var(--radius-sm) !important;
     font-size: var(--text-md);
 }
+[data-testid="stTextInput"] input::placeholder,
+[data-testid="stTextArea"] textarea::placeholder { color: var(--muted); }
+[data-baseweb="input"],
+[data-baseweb="textarea"] {
+    background: var(--surface-alt) !important;
+    border-color: var(--line) !important;
+    border-radius: var(--radius-sm) !important;
+}
 [data-baseweb="input"]:focus-within,
 [data-baseweb="textarea"]:focus-within {
+    background: var(--surface) !important;
     border-color: var(--accent) !important;
     box-shadow: 0 0 0 3px var(--focus) !important;
 }
@@ -379,18 +824,30 @@ button[data-testid="baseButton-secondary"]:focus-visible {
     position: relative;
 }
 .step:last-child { border-right: 0; }
-.step-no {
-    color: var(--muted);
+/* Nomor langkah dan nomor peringkat memakai bentuk lingkaran yang sama. */
+.step-no,
+.peringkat-no {
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: inline-flex;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: 700;
+    justify-content: center;
+}
+.step-no {
+    background: var(--surface-alt);
+    color: var(--muted);
+    height: 28px;
+    letter-spacing: 0;
+    width: 28px;
 }
 .step-name {
     display: block;
     font-size: 0.88rem;
     font-weight: 700;
-    margin-top: var(--space-1);
+    margin-top: var(--space-2);
 }
 .step-note {
     color: var(--muted);
@@ -398,9 +855,20 @@ button[data-testid="baseButton-secondary"]:focus-visible {
     font-size: var(--text-xs);
     margin-top: 2px;
 }
-.step.done .step-no { color: var(--accent); }
-.step.done .step-no::after { content: "  ✓"; }
-.step.active { background: var(--accent-soft); }
+.step.done .step-no {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-dark);
+    font-size: 0;
+}
+.step.done .step-no::after { content: "✓"; font-size: var(--text-sm); }
+.step.active { background: var(--accent-wash); }
+.step.active .step-no {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--white);
+}
+.step.active .step-name { color: var(--accent-dark); }
 .step.active::after {
     background: var(--accent);
     bottom: 0;
@@ -412,31 +880,6 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 }
 
 /* ---------- Ringkasan & status ---------- */
-.summary-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    padding: 0.85rem var(--space-4);
-}
-.summary-card .label {
-    color: var(--muted);
-    font-size: var(--text-sm);
-    font-weight: 600;
-}
-.summary-card .value {
-    color: var(--ink);
-    font-size: var(--text-xl);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.25;
-    margin-top: var(--space-1);
-}
-.summary-card .hint {
-    color: var(--muted);
-    font-size: var(--text-xs);
-    margin-top: var(--space-1);
-}
-
 .status-badge {
     align-items: center;
     border: 1px solid transparent;
@@ -445,7 +888,8 @@ button[data-testid="baseButton-secondary"]:focus-visible {
     font-size: var(--text-xs);
     font-weight: 700;
     gap: var(--space-1);
-    padding: 0.2rem 0.55rem;
+    letter-spacing: 0.01em;
+    padding: 0.22rem 0.6rem;
 }
 .status-badge::before {
     background: currentColor;
@@ -479,29 +923,35 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 .gauge {
     /* Hanya sudut dinamis yang memakai inline style. Warna ada di class. */
     align-items: center;
-    background: conic-gradient(var(--gauge-color) var(--derajat), var(--line) var(--derajat) 360deg);
+    background: conic-gradient(
+        var(--gauge-color) var(--derajat),
+        var(--gauge-track) var(--derajat) 360deg
+    );
     border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--line), var(--shadow-sm);
     display: flex;
-    flex: 0 0 112px;
-    height: 112px;
+    flex: 0 0 116px;
+    height: 116px;
     justify-content: center;
     position: relative;
-    width: 112px;
+    width: 116px;
 }
 .gauge--aman { --gauge-color: var(--accent); }
 .gauge--perhatian { --gauge-color: var(--warning); }
 .gauge::before {
     background: var(--surface);
     border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--line-soft);
     content: "";
-    height: 88px;
+    height: 90px;
     position: absolute;
-    width: 88px;
+    width: 90px;
 }
 .gauge .teks { position: relative; text-align: center; z-index: 1; }
 .gauge .teks b {
     color: var(--ink);
-    font-size: 1.45rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -529,36 +979,54 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 
 /* ---------- Komponen editorial ---------- */
 .hero-title {
-    color: var(--ink);
+    color: var(--hero-ink);
     font-family: var(--font-display);
-    font-size: var(--text-2xl);
-    letter-spacing: -0.02em;
-    line-height: 1.14;
-    margin: var(--space-1) 0 var(--space-3);
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.16;
+    margin: 0 0 var(--space-3);
+    max-width: 24ch;
+    overflow-wrap: break-word;
 }
 .hero-copy {
-    color: var(--muted) !important;
-    font-size: var(--text-md);
-    max-width: 58ch;
+    color: var(--hero-copy) !important;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    margin: 0 0 var(--space-5);
+    max-width: 54ch;
 }
-.hero-actions {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3) var(--space-5);
-    margin-top: var(--space-5);
+/* Aturan p Streamlit lebih spesifik, jadi warna deskripsi hero dikunci ulang
+   di sini agar benar-benar memakai token --hero-copy. */
+[data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) .hero-copy {
+    color: var(--hero-copy) !important;
+    font-family: var(--font-ui);
 }
-.hero-actions small { color: var(--muted); font-size: var(--text-sm); }
 .hero-aside {
-    /* Gradasi sangat tipis hanya untuk memisahkan panel ringkasan dari hero. */
-    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%);
-    border: 1px solid var(--line);
+    background: var(--hero-accent-dark);
+    border: 1px solid var(--hero-accent-dark);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    color: var(--hero-cream);
     height: 100%;
+    overflow: hidden;
     padding: var(--space-5);
+    position: relative;
 }
+.hero-aside::before { background: var(--hero-bg); }
+.hero-aside .card-kicker {
+    color: var(--hero-bg) !important;
+    margin-bottom: var(--space-2);
+}
+/* Teks dan garis pada panel gelap memakai krem/hijau lembut agar tidak
+   jatuh di bawah 4.5:1 terhadap hijau gelap. */
+.hero-aside .meta-list--gelap .meta-row { border-bottom-color: rgba(248, 247, 242, 0.28) !important; }
+.hero-aside .meta-list--gelap .meta-row span { color: var(--hero-bg) !important; }
+.hero-aside .meta-list--gelap .meta-row b { color: var(--hero-cream) !important; }
 .meta-list { margin: var(--space-1) 0 0; }
+.meta-list--gelap .meta-row { border-bottom-color: var(--deep-line); }
+.meta-list--gelap .meta-row span { color: var(--deep-muted); }
+.meta-list--gelap .meta-row b { color: var(--deep-ink); }
 .meta-row {
     align-items: baseline;
     border-bottom: 1px solid var(--line-soft);
@@ -574,12 +1042,13 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 
 .pill-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-2) 0 0; }
 .pill {
-    background: var(--surface-alt);
+    background: var(--accent-wash);
     border: 1px solid var(--line);
-    border-radius: 6px;
-    color: var(--ink);
+    border-radius: var(--radius-pill);
+    color: var(--accent-dark);
     font-size: var(--text-sm);
-    padding: 0.25rem 0.55rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
 }
 .pill::before {
     background: var(--accent);
@@ -593,7 +1062,7 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 }
 
 .note {
-    background: var(--surface-alt);
+    background: var(--accent-wash);
     border-left: 3px solid var(--accent);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     color: var(--muted) !important;
@@ -611,6 +1080,8 @@ button[data-testid="baseButton-secondary"]:focus-visible {
     background: var(--surface-alt);
     border: 1px dashed var(--line);
     border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    min-height: var(--panel-min-h);
     padding: var(--space-5);
 }
 .empty-state .empty-title {
@@ -627,50 +1098,98 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 
 /* ---------- Daftar ringkas ---------- */
 .peringkat-list, .aktivitas-list { display: grid; gap: var(--space-2); }
-.peringkat-baris {
+/* Baris peringkat dan aktivitas memakai kartu ringkas yang sama; hanya ukuran
+   kolom dan padding yang berbeda karena isinya berbeda. */
+.peringkat-baris,
+.aktivitas-baris {
     align-items: center;
+    background: var(--surface-alt);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
     display: grid;
-    font-size: var(--text-sm);
     gap: var(--space-3);
-    grid-template-columns: 26px minmax(0, 1fr) 110px 72px;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
-.peringkat-no { color: var(--muted); font-family: var(--font-mono); font-size: var(--text-xs); }
+.peringkat-baris {
+    font-size: var(--text-sm);
+    grid-template-columns: 28px minmax(0, 1fr) 110px 72px;
+    padding: 0.55rem 0.7rem;
+}
+.peringkat-baris:hover { background: var(--accent-wash); border-color: var(--line); }
+.peringkat-no {
+    background: var(--surface);
+    color: var(--accent-dark);
+    height: 24px;
+    width: 24px;
+}
 .peringkat-nama { min-width: 0; overflow-wrap: anywhere; }
-.peringkat-bar { background: var(--line); border-radius: var(--radius-pill); height: 5px; overflow: hidden; }
+.peringkat-bar { background: var(--gauge-track); border-radius: var(--radius-pill); height: 6px; overflow: hidden; }
 .peringkat-bar i { background: var(--accent); display: block; height: 100%; }
 .peringkat-bar i.perhatian { background: var(--warning); }
 .peringkat-nilai { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
 
 .aktivitas-baris {
-    align-items: baseline;
-    border-bottom: 1px solid var(--line-soft);
-    display: grid;
-    gap: var(--space-3);
-    grid-template-columns: 42px minmax(0, 1fr) auto;
-    padding: var(--space-3) 0;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    padding: 0.65rem 0.7rem;
 }
-.aktivitas-baris:last-child { border-bottom: 0; }
-.aktivitas-id { color: var(--muted); font-family: var(--font-mono); font-size: var(--text-xs); }
-.aktivitas-isi b { display: block; font-size: 0.88rem; }
+.aktivitas-baris:hover { background: var(--accent-wash); border-color: var(--line); }
+.aktivitas-id {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--accent-dark);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    text-align: center;
+}
+.aktivitas-isi b { display: block; font-size: 0.9rem; }
 .aktivitas-isi small { color: var(--muted); display: block; font-size: var(--text-xs); }
 .aktivitas-waktu { color: var(--muted); font-size: var(--text-xs); white-space: nowrap; }
 
-.quick-list { display: grid; gap: var(--space-3); grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.quick-item { border-top: 2px solid var(--line); padding-top: var(--space-3); }
-.quick-item span { color: var(--accent); font-family: var(--font-mono); font-size: var(--text-xs); }
-.quick-item b { display: block; font-size: 0.88rem; margin-top: var(--space-1); }
-.quick-item small { color: var(--muted); font-size: var(--text-xs); }
-
-/* ---------- Kelompok gejala & kartu riwayat ---------- */
-.gejala-grup-judul {
-    border-top: 1px solid var(--line-soft);
-    color: var(--accent-dark) !important;
+/* Alur singkat memakai rel langkah, bukan tiga kartu seragam. */
+.process-rail {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: var(--space-2) 0;
+}
+.process-step { border-top: 2px solid var(--line); padding-top: var(--space-3); }
+.process-no {
+    color: var(--accent-dark);
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.12em;
-    margin: var(--space-4) 0 var(--space-2);
+}
+.process-step b { display: block; font-size: var(--text-md); margin-top: var(--space-1); }
+.process-step small { color: var(--muted); font-size: var(--text-sm); }
+
+/* ---------- Kelompok gejala & kartu riwayat ---------- */
+.gejala-grup-judul {
+    align-items: center;
+    border-top: 1px solid var(--line-soft);
+    color: var(--accent-dark) !important;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    gap: var(--space-2);
+    letter-spacing: 0.12em;
+    margin: var(--space-4) 0 var(--space-3);
     padding-top: var(--space-3);
     text-transform: uppercase;
+}
+.grup-jumlah {
+    background: var(--accent-wash);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    letter-spacing: 0;
+    padding: 0.1rem 0.45rem;
+    text-transform: none;
 }
 .gejala-grup-judul:first-of-type {
     border-top: 0;
@@ -683,10 +1202,14 @@ button[data-testid="baseButton-secondary"]:focus-visible {
     border: 1px solid var(--line);
     border-left: 4px solid var(--accent);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
     margin-bottom: var(--space-3);
+    min-height: var(--card-min-h);
     padding: var(--space-4);
+    transition: background 0.15s ease;
 }
+.riwayat-kartu:hover { background: var(--surface-alt); }
+.riwayat-kartu--perhatian:hover { background: var(--warning-soft); }
 .riwayat-kartu--perhatian { border-left-color: var(--warning); }
 .riwayat-top {
     align-items: flex-start;
@@ -730,43 +1253,50 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 .riwayat-meta b { color: var(--ink); font-weight: 600; }
 .riwayat-badges { align-items: center; display: flex; gap: var(--space-2); }
 
-.flow-list {
+/* Cara kerja dibaca sebagai urutan, bukan empat kartu dengan bentuk sama. */
+.method-sequence { margin: var(--space-2) 0; }
+.method-row {
+    align-items: baseline;
+    border-bottom: 1px solid var(--line-soft);
     display: grid;
-    gap: var(--space-3);
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+    grid-template-columns: 46px minmax(150px, 0.55fr) minmax(0, 1.45fr);
+    padding: var(--space-3) 0;
 }
-.flow-item {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    padding: 0.85rem 0.9rem;
-}
-.flow-item span {
+.method-row:first-child { padding-top: 0; }
+.method-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.method-no {
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: 700;
 }
-.flow-item b { display: block; font-size: 0.88rem; margin: var(--space-2) 0 var(--space-1); }
-.flow-item small { color: var(--muted); font-size: var(--text-xs); }
+.method-row b { font-family: var(--font-display); font-size: 1.08rem; }
+.method-row small { color: var(--muted); font-size: var(--text-sm); }
 
 .app-footer {
-    border-top: 1px solid var(--line);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
     color: var(--muted);
     display: flex;
     flex-wrap: wrap;
     font-size: var(--text-xs);
     gap: var(--space-2) var(--space-5);
     justify-content: space-between;
-    margin-top: var(--space-6);
-    padding-top: var(--space-4);
+    margin-top: var(--space-7);
+    padding: var(--space-4) var(--space-5);
 }
+.app-footer span:first-child { color: var(--ink); font-weight: 700; }
 
 /* ---------- Responsif ---------- */
-/* Tablet: kolom Streamlit dibagi dua agar kartu tidak terlalu sempit. */
+/* Tablet: kolom Streamlit dibagi dua agar konten tidak terlalu sempit. */
 @media (max-width: 900px) {
-    .flow-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .hero-title { font-size: 1.8rem; }
+    .hero-title { font-size: 1.7rem; }
+    [data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) {
+        padding: var(--space-5) !important;
+    }
+    .process-rail { gap: var(--space-3); }
     /* Selector internal Streamlit: kolom horizontal. */
     [data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; }
     [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
@@ -774,15 +1304,28 @@ button[data-testid="baseButton-secondary"]:focus-visible {
         flex: 1 1 calc(50% - 0.5rem) !important;
         min-width: calc(50% - 0.5rem) !important;
     }
+    /* Strip angka: 4 kolom menjadi 2×2, 3 kolom menjadi 2 + 1 penuh. */
+    [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > [data-testid="stColumn"]:nth-child(odd):not(:last-child) {
+        border-bottom: 1px solid var(--line-soft);
+    }
+    [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > [data-testid="stColumn"]:last-child:nth-child(odd) {
+        flex-basis: 100% !important;
+        min-width: 100% !important;
+    }
 }
 
 /* Smartphone: satu kolom, tombol penuh lebar, tabel bisa digulir. */
 @media (max-width: 640px) {
     h1 { font-size: 1.65rem !important; }
     .block-container { padding-left: var(--space-4); padding-right: var(--space-4); }
-    .hero-title { font-size: 1.6rem; }
+    .hero-title { font-size: 1.55rem; max-width: none; }
+    [data-testid="stLayoutWrapper"] > div[data-testid="stVerticalBlock"][data-test-wrap="false"]:has(.hero-title) {
+        padding: var(--space-4) !important;
+    }
     .hero-aside { padding: var(--space-4); }
-    .quick-list { grid-template-columns: 1fr; }
+    .process-rail { grid-template-columns: 1fr; }
+    .method-row { grid-template-columns: 34px minmax(0, 1fr); gap: var(--space-2) var(--space-3); }
+    .method-row small { grid-column: 2; }
     .peringkat-baris { grid-template-columns: 24px minmax(0, 1fr) 64px; }
     .peringkat-baris .peringkat-bar { display: none; }
     .aktivitas-baris { grid-template-columns: 38px minmax(0, 1fr); }
@@ -791,21 +1334,27 @@ button[data-testid="baseButton-secondary"]:focus-visible {
     .step { border-bottom: 1px solid var(--line); border-right: 0; }
     .step:last-child { border-bottom: 0; }
     .gauge-wrap { align-items: flex-start; flex-direction: column; gap: var(--space-3); }
-    .gauge { flex-basis: 104px; height: 104px; width: 104px; }
+    .gauge { flex-basis: 106px; height: 106px; width: 106px; }
     .gauge::before { height: 82px; width: 82px; }
-    .flow-list { grid-template-columns: 1fr; }
     .meta-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+    .riwayat-badges { justify-content: space-between; width: 100%; }
     /* Selector internal Streamlit: kolom dan tombol. */
     [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
     [data-testid="stHorizontalBlock"] > [data-testid="column"] {
         flex: 1 1 100% !important;
         min-width: 100% !important;
     }
+    [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > [data-testid="stColumn"] { border-bottom: 0 !important; }
     /* Selector internal Streamlit: pembungkus tombol ikut penuh agar tombol
-       tidak hanya melebar di dalam wadah yang masih menyempit. */
+       tidak hanya melebar di dalam wadah `width="fit-content"`. */
     [data-testid="stFormSubmitButton"],
     [data-testid="stDownloadButton"],
-    [data-testid="stButton"] { width: 100% !important; }
+    [data-testid="stButton"],
+    [data-testid="stElementContainer"]:has([data-testid="stButton"]),
+    [data-testid="stElementContainer"]:has([data-testid="stFormSubmitButton"]),
+    [data-testid="stElementContainer"]:has([data-testid="stDownloadButton"]) {
+        width: 100% !important;
+    }
     [data-testid="stFormSubmitButton"] button,
     [data-testid="stDownloadButton"] button,
     [data-testid="stButton"] button { width: 100% !important; }
@@ -817,6 +1366,7 @@ button[data-testid="baseButton-secondary"]:focus-visible {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         scroll-behavior: auto !important;
+        transform: none !important;
         transition-duration: 0.01ms !important;
     }
 }
@@ -859,23 +1409,30 @@ def sidebar_hero():
     """Identitas aplikasi di bagian atas sidebar."""
     return """
     <div class="brand">
-        <div class="brand-mark">+</div>
-        <div>
-            <div class="brand-name">CEKDBD</div>
-            <div class="brand-tag">sistem untuk mendeteksi gejala anda</div>
+        <div class="brand-head">
+            <div class="brand-mark">+</div>
+            <div>
+                <div class="brand-eyebrow">Sistem pakar</div>
+                <div class="brand-name">CEKDBD</div>
+            </div>
+        </div>
+        <div class="brand-tag">sistem untuk mendeteksi gejala anda</div>
+        <div class="brand-chips">
+            <span class="brand-chip">CBR</span>
+            <span class="brand-chip">Cosine similarity</span>
         </div>
     </div>
     """
 
 
 def sidebar_info():
-    """Catatan singkat di bawah navigasi."""
+    """Petunjuk singkat di bawah navigasi, bukan jargon teknis."""
     return """
     <div class="side-note">
-        <b>Metode</b><br>
-        Cosine Similarity dihitung manual dengan Python dasar.<br><br>
-        <b>Alur</b><br>
-        Retrieve → Reuse → Revise → Retain
+        <div class="side-note-title">Cara pakai</div>
+        <div class="side-note-copy">Isi identitas, pilih gejala, lalu baca perbandingan kasusnya.</div>
+        <div class="side-note-title side-note-title--jarak">Yang perlu diingat</div>
+        <div class="side-note-copy">Hasilnya membantu membaca kemungkinan, bukan diagnosis medis final.</div>
     </div>
     """
 
@@ -906,6 +1463,34 @@ def bagian(nomor, judul, keterangan=""):
         st.caption(keterangan)
 
 
+def kicker(teks):
+    """Label kecil di atas judul kartu atau daftar."""
+    st.markdown(
+        f'<div class="card-kicker">{escape(str(teks))}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def pemisah():
+    """Garis pemisah antar-bagian dengan ritme yang sama di semua halaman."""
+    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+
+
+def stat_strip(data):
+    """
+    Merangkai angka ringkasan sebagai satu strip.
+
+    `data` berisi pasangan `(label, nilai, petunjuk)`. Widget `st.metric`
+    tetap dipakai supaya nilai terbaca oleh pembaca layar dan tooling;
+    CSS di atas yang menyatukan tampilannya.
+    """
+    kolom = st.columns(len(data))
+    for kol, item in zip(kolom, data):
+        label, nilai, petunjuk = item
+        with kol:
+            st.metric(str(label), nilai, help=str(petunjuk))
+
+
 def judul_kartu(teks, besar=False):
     """Judul bergaya serif di dalam kartu, untuk nama kasus atau solusi."""
     kelas = "card-title lg" if besar else "card-title"
@@ -928,14 +1513,19 @@ def _status_info(persentase):
     """
     Menentukan status visual dari persentase kemiripan.
 
-    Ambang 60% dipilih karena kasus contoh terbaik berada di sekitar 61,7%,
-    sehingga hasil acuan tampil sebagai "Perlu perhatian". Status ini hanya
-    menggambarkan kedekatan kasus, bukan diagnosis medis.
+    Ambang 60% dipilih karena kasus contoh terbaik berada di sekitar 61,7%.
+    Label sengaja memakai "Rendah"/"Tinggi" agar tidak terdengar seperti
+    penegasan medis; nilainya hanya kedekatan antar-kasus.
     """
     nilai = float(persentase or 0)
     if nilai >= 60:
-        return "Perlu perhatian", "perhatian", "Kedekatan kasus tinggi"
-    return "Aman", "aman", "Kedekatan kasus rendah"
+        return "Tinggi", "perhatian", "Kedekatan kasus tinggi"
+    return "Rendah", "aman", "Kedekatan kasus rendah"
+
+
+def _status_kelas(persentase):
+    """Mengambil kelas warna status tanpa memakai label dan keterangannya."""
+    return _status_info(persentase)[1]
 
 
 def status_badge_html(persentase):
@@ -943,15 +1533,8 @@ def status_badge_html(persentase):
     label, kelas, keterangan = _status_info(persentase)
     return (
         f'<span class="status-badge status-badge--{kelas}" '
+        f'role="img" aria-label="{escape(keterangan)}" '
         f'title="{escape(keterangan)}">{escape(label)}</span>'
-    )
-
-
-def status_badge(persentase):
-    """Menampilkan label status kecil untuk persentase kemiripan."""
-    st.markdown(
-        f'<div class="gauge-badges">{status_badge_html(persentase)}</div>',
-        unsafe_allow_html=True,
     )
 
 
@@ -968,12 +1551,14 @@ def kosong(judul, deskripsi, petunjuk=None):
     st.markdown(isi, unsafe_allow_html=True)
 
 
-def meta_rows(baris):
+def meta_rows(baris, gelap=False):
     """
     Menghasilkan baris label → nilai untuk panel ringkasan.
 
-    `baris` berisi pasangan `(label, nilai)`. Fungsi ini hanya merangkai HTML;
-    pemanggil yang memasangnya dengan `unsafe_allow_html=True`.
+    `baris` berisi pasangan `(label, nilai)`. Set `gelap=True` untuk panel
+    pine supaya warna teks dan garis mengikuti palet terang di atas gelap.
+    Fungsi ini hanya merangkai HTML; pemanggil yang memasangnya dengan
+    `unsafe_allow_html=True`.
     """
     bagian = []
     for label, nilai in baris:
@@ -983,7 +1568,8 @@ def meta_rows(baris):
             f"<b>{escape(str(nilai))}</b>"
             "</div>"
         )
-    return '<div class="meta-list">' + "".join(bagian) + "</div>"
+    kelas = "meta-list meta-list--gelap" if gelap else "meta-list"
+    return f'<div class="{kelas}">' + "".join(bagian) + "</div>"
 
 
 def pil_ringkas(daftar, label=None):
@@ -999,10 +1585,16 @@ def pil_ringkas(daftar, label=None):
     st.markdown(f'<div class="pill-row">{isi}</div>', unsafe_allow_html=True)
 
 
-def grup_gejala(judul):
+def grup_gejala(judul, jumlah=None):
     """Pembatas antar-kelompok gejala pada langkah 2 Cek Gejala."""
+    jumlah_html = ""
+    if jumlah is not None:
+        jumlah_html = f'<span class="grup-jumlah">{escape(str(jumlah))} gejala</span>'
     st.markdown(
-        f'<div class="gejala-grup-judul">{escape(str(judul))}</div>',
+        '<div class="gejala-grup-judul">'
+        f"<span>{escape(str(judul))}</span>"
+        f"{jumlah_html}"
+        "</div>",
         unsafe_allow_html=True,
     )
 
@@ -1018,7 +1610,7 @@ def peringkas(baris):
         persen = float(b.get("persentase", 0) or 0)
         lebar = max(2.0, min(100.0, persen))
         cosine = round(float(b.get("cosine", 0) or 0), 4)
-        _label, kelas, _keterangan = _status_info(persen)
+        kelas = _status_kelas(persen)
         bagian.append(
             '<div class="peringkat-baris">'
             f'<span class="peringkat-no">{escape(str(b.get("peringkat", "")))}</span>'
@@ -1036,7 +1628,7 @@ def peringkas(baris):
 
 def kartu_riwayat(id_konsultasi, nama, persentase, solusi, waktu):
     """Kartu ringkas satu pemeriksaan di halaman Riwayat."""
-    _label, kelas, _keterangan = _status_info(persentase)
+    kelas = _status_kelas(persentase)
     st.markdown(
         '<div class="riwayat-kartu riwayat-kartu--' + kelas + '">'
         '<div class="riwayat-top">'
@@ -1087,7 +1679,7 @@ def aktivitas_ringkas(baris):
 
 
 def quick_steps():
-    """Tiga langkah singkat di Beranda, tanpa ikon atau dekorasi berlebih."""
+    """Tiga langkah singkat di Beranda, dirangkai sebagai rel proses."""
     data = [
         ("01", "Data pasien", "Identitas singkat"),
         ("02", "Pilih gejala", "Centang keluhan"),
@@ -1096,14 +1688,14 @@ def quick_steps():
     bagian = []
     for nomor, judul, keterangan in data:
         bagian.append(
-            '<div class="quick-item">'
-            f"<span>{escape(nomor)}</span>"
+            '<div class="process-step">'
+            f'<span class="process-no">{escape(nomor)}</span>'
             f"<b>{escape(judul)}</b>"
             f"<small>{escape(keterangan)}</small>"
             "</div>"
         )
     st.markdown(
-        '<div class="quick-list">' + "".join(bagian) + "</div>",
+        '<div class="process-rail">' + "".join(bagian) + "</div>",
         unsafe_allow_html=True,
     )
 
@@ -1142,37 +1734,25 @@ def langkah_cbr(aktif):
 
 
 def flow_cards():
-    """Penjelasan singkat empat tahap CBR di halaman Beranda."""
+    """Penjelasan empat tahap CBR sebagai urutan, bukan kartu seragam."""
     bagian = []
     for i, (nama, keterangan) in enumerate(_TAHAPAN_CBR):
         bagian.append(
-            '<div class="flow-item">'
-            f"<span>{i + 1:02d}</span>"
+            '<div class="method-row">'
+            f'<span class="method-no">{i + 1:02d}</span>'
             f"<b>{escape(nama)}</b>"
             f"<small>{escape(keterangan)}</small>"
             "</div>"
         )
     st.markdown(
-        '<div class="flow-list">' + "".join(bagian) + "</div>",
-        unsafe_allow_html=True,
-    )
-
-
-def kartu_ringkas(judul, nilai, petunjuk):
-    """Kartu kecil untuk angka ringkasan."""
-    st.markdown(
-        '<div class="summary-card">'
-        f'<div class="label">{escape(str(judul))}</div>'
-        f'<div class="value">{escape(str(nilai))}</div>'
-        f'<div class="hint">{escape(str(petunjuk))}</div>'
-        "</div>",
+        '<div class="method-sequence">' + "".join(bagian) + "</div>",
         unsafe_allow_html=True,
     )
 
 
 def gauge(persentase, nama_kasus, keterangan=""):
     """
-    Cincin persentase kemiripan beserta status aman/perlu perhatian.
+    Cincin persentase kemiripan beserta label kedekatan rendah/tinggi.
 
     Nilai sudah dihitung di core/cbr.py. Fungsi ini hanya menyesuaikan tampilan
     agar tetap berada di rentang 0–100 dan memberi label status visual.
@@ -1183,7 +1763,7 @@ def gauge(persentase, nama_kasus, keterangan=""):
     if nilai > 100:
         nilai = 100.0
     derajat = round(nilai * 3.6, 1)
-    label, kelas, keterangan_status = _status_info(nilai)
+    kelas = _status_kelas(nilai)
     ket = f'<div class="baris">{escape(str(keterangan))}</div>' if keterangan else ""
 
     st.markdown(
@@ -1194,10 +1774,7 @@ def gauge(persentase, nama_kasus, keterangan=""):
         '<div class="gauge-info">'
         '<div class="label">Kasus pembanding</div>'
         f'<div class="nama">{escape(str(nama_kasus))}</div>'
-        '<div class="gauge-badges">'
-        f'<span class="status-badge status-badge--{kelas}" '
-        f'title="{escape(keterangan_status)}">{escape(label)}</span>'
-        "</div>"
+        f'<div class="gauge-badges">{status_badge_html(nilai)}</div>'
         f"{ket}"
         "</div></div>",
         unsafe_allow_html=True,
@@ -1205,7 +1782,12 @@ def gauge(persentase, nama_kasus, keterangan=""):
 
 
 def footer():
-    """Penutup halaman seperti pada website umumnya."""
+    """Penutup halaman, disembunyikan saat pengguna masih mengisi wizard."""
+    if (
+        st.session_state.get("halaman_tujuan") == "Cek Gejala"
+        and st.session_state.get("tahap_konsultasi", "Data") in ("Data", "Gejala")
+    ):
+        return
     st.markdown(
         '<div class="app-footer">'
         "<span>CEKDBD · Sistem pendukung keputusan berbasis kasus</span>"

@@ -17,7 +17,7 @@ from ui import dashboard, konsultasi, riwayat, tema
 
 st.set_page_config(
     page_title="CEKDBD — Sistem untuk mendeteksi gejala anda",
-    page_icon="🩺",
+    page_icon="assets/favicon.svg",
     layout="wide",
 )
 

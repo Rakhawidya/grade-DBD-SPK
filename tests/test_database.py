@@ -32,6 +32,30 @@ class DatabaseTestCase(unittest.TestCase):
 
 
 class TestDatabase(DatabaseTestCase):
+    def test_env_spk_db_path_dibaca_saat_koneksi(self):
+        """SPK_DB_PATH harus dibaca ulang, bukan dibekukan saat import.
+
+        Pengujian UI mengganti environment variable setelah modul database
+        di-import. Meng caching DB_PATH akan membuat tes itu menulis ke
+        database aplikasi yang nyata.
+        """
+        f = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        f.close()
+        lama = os.environ.get("SPK_DB_PATH")
+        try:
+            os.environ["SPK_DB_PATH"] = f.name
+            with database.koneksi() as k:
+                baris = k.execute("PRAGMA database_list").fetchone()
+            self.assertIsNotNone(baris)
+            self.assertEqual(os.path.realpath(baris[2]), os.path.realpath(f.name))
+        finally:
+            if lama is None:
+                os.environ.pop("SPK_DB_PATH", None)
+            else:
+                os.environ["SPK_DB_PATH"] = lama
+            if os.path.exists(f.name):
+                os.remove(f.name)
+
     def test_tabel_dan_data_awal_terisi(self):
         self.assertEqual(len(kriteria.daftar_kriteria(self.db_path)), 14)
         self.assertEqual(len(kasus.daftar_kasus(self.db_path)), 4)

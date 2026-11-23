@@ -73,8 +73,8 @@ spk-db/
 ├── tests/
 │   ├── __init__.py
 │   ├── test_perhitungan.py    # 24 unit test matematika CBR
-│   ├── test_database.py       # 15 test database + validasi + alur lengkap
-│   └── test_ui.py             # 8 test integrasi antarmuka (AppTest Streamlit)
+│   ├── test_database.py       # 16 test database + validasi + alur lengkap
+│   └── test_ui.py             # 10 test integrasi antarmuka (AppTest Streamlit)
 │
 └── uji_end_to_end.py          # Uji HTTP ke server Streamlit yang berjalan
 ```
@@ -363,7 +363,7 @@ streamlit run app.py
 
 Browser terbuka di `http://localhost:8501`. Database + data awal dibuat otomatis.
 
-**Menjalankan pengujian (47 tes):**
+**Menjalankan pengujian (50 tes):**
 ```bash
 python -m unittest discover -s tests -v
 ```
@@ -441,7 +441,7 @@ sehingga hasil aplikasi dapat langsung dibandingkan.
 > menjadi beberapa menu. Rincian perhitungannya tetap bisa dibuka.
 
 **Q: Bagaimana membuktikan hasilnya benar?**
-> Menjalankan `python -m unittest discover -s tests -v` — 47 tes, termasuk
+> Menjalankan `python -m unittest discover -s tests -v` — 50 tes, termasuk
 > perbandingan langsung dengan angka dari kode acuan `cbr.py`.
 
 **Q: Kenapa urutan kriteria penting?**

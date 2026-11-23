@@ -19,19 +19,40 @@ Urutan kriteria diambil dari kolom `urutan` sehingga vektor kasus lama dan
 kasus baru selalu dibangun dengan urutan yang sama.
 """
 
+import datetime
 import os
 import sqlite3
 
 from contextlib import contextmanager
 from pathlib import Path
 
-# File database diletakkan di folder project supaya mudah ditemukan.
-# Bisa dioverride lewat environment variable SPK_DB_PATH (mis. untuk pengujian
-# atau deployment), tanpa mengubah kode.
-DB_PATH = Path(os.environ.get(
-    "SPK_DB_PATH",
-    str(Path(__file__).resolve().parent.parent / "spk_dbd.db"),
-))
+# File database bawaan diletakkan di folder project supaya mudah ditemukan.
+# Environment variable SPK_DB_PATH dibaca ulang setiap koneksi dibuka, bukan
+# dibekukan saat modul di-import; pengujian UI menggantinya setelah import.
+DB_PATH = Path(__file__).resolve().parent.parent / "spk_dbd.db"
+
+
+def _path_database():
+    """Menentukan file database aktif pada saat koneksi dibuka."""
+    return Path(os.environ.get("SPK_DB_PATH", str(DB_PATH)))
+
+
+def waktu_sekarang():
+    """Format waktu yang dipakai semua tabel (satu sumber, satu format)."""
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def hitung_baris(k, tabel, syarat=None, parameter=()):
+    """
+    Menghitung baris dengan alias `jml`, seperti seluruh query COUNT lama.
+
+    `tabel` dan `syarat` hanya boleh berisi konstanta internal modul service;
+    nilai yang berasal dari user tetap lewat `parameter`.
+    """
+    sql = f"SELECT COUNT(*) AS jml FROM {tabel}"
+    if syarat:
+        sql += f" WHERE {syarat}"
+    return k.execute(sql, parameter).fetchone()["jml"]
 
 
 @contextmanager
@@ -52,12 +73,13 @@ def koneksi(db_path=None):
     if db_path is not None:
         path = Path(db_path)
     else:
-        path = Path(os.environ.get("SPK_DB_PATH", str(DB_PATH)))
+        path = _path_database()
 
     k = sqlite3.connect(str(path))
     k.row_factory = sqlite3.Row   # agar hasil query bisa diakses per kolom
-    k.execute("PRAGMA foreign_keys = ON")
     try:
+        # Di dalam try supaya koneksi tetap ditutup bila PRAGMA gagal.
+        k.execute("PRAGMA foreign_keys = ON")
         yield k
         k.commit()
     except Exception:
@@ -127,7 +149,7 @@ def inisialisasi_database(db_path=None):
             );
         """)
 
-        jumlah_kriteria = k.execute("SELECT COUNT(*) AS jml FROM kriteria").fetchone()["jml"]
+        jumlah_kriteria = hitung_baris(k, "kriteria")
         if jumlah_kriteria == 0:
             _isi_data_awal(k)
 
@@ -140,8 +162,6 @@ def _isi_data_awal(k):
     pada file cbr.py (kode acuan), sehingga hasil perhitungan aplikasi dapat
     dibandingkan langsung dengan kode acuan tersebut.
     """
-    import datetime
-
     gejala = [
         ("G01", "Demam tinggi mendadak", 1),
         ("G02", "Sakit kepala", 2),
@@ -181,9 +201,9 @@ def _isi_data_awal(k):
     ]
 
     daftar_kriteria = k.execute(
-        "SELECT id, kode FROM kriteria ORDER BY urutan"
+        "SELECT id, kode FROM kriteria ORDER BY urutan, id"
     ).fetchall()
-    sekarang = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sekarang = waktu_sekarang()
 
     for nama, solusi, keterangan, nilai_list in kasus_contoh:
         kursor = k.execute(

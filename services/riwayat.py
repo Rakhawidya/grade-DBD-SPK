@@ -6,14 +6,9 @@ seluruh detail perbandingannya (dot product, panjang vektor, cosine,
 peringkat) sehingga hasil lama dapat ditampilkan ulang secara transparan.
 """
 
-import datetime
 import json
 
-from services.database import koneksi
-
-
-def _waktu_sekarang():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+from services.database import hitung_baris, koneksi, waktu_sekarang
 
 
 def simpan_konsultasi(payload, db_path=None):
@@ -37,13 +32,13 @@ def simpan_konsultasi(payload, db_path=None):
             (
                 payload["nama_kasus_baru"],
                 json.dumps(payload["vektor_baru"]),
-                payload.get("kasus_acuan_id"),
-                payload.get("cosine_tertinggi"),
-                payload.get("solusi_rekomendasi"),
-                payload.get("solusi_final"),
-                payload.get("sumber_solusi"),
-                payload.get("catatan"),
-                _waktu_sekarang(),
+                payload["kasus_acuan_id"],
+                payload["cosine_tertinggi"],
+                payload["solusi_rekomendasi"],
+                payload["solusi_final"],
+                payload["sumber_solusi"],
+                payload["catatan"],
+                waktu_sekarang(),
             ),
         )
         konsultasi_id = kursor.lastrowid
@@ -58,14 +53,14 @@ def simpan_konsultasi(payload, db_path=None):
                 """,
                 (
                     konsultasi_id,
-                    item.get("kasus_id"),
-                    item.get("nama"),
-                    item.get("dot_product"),
-                    item.get("panjang_baru"),
-                    item.get("panjang_lama"),
-                    item.get("cosine"),
-                    item.get("persentase"),
-                    item.get("peringkat"),
+                    item["kasus_id"],
+                    item["nama"],
+                    item["dot_product"],
+                    item["panjang_baru"],
+                    item["panjang_lama"],
+                    item["cosine"],
+                    item["persentase"],
+                    item["peringkat"],
                 ),
             )
 
@@ -126,12 +121,10 @@ def konsultasi_terakhir(db_path=None):
 
 def total_konsultasi(db_path=None):
     with koneksi(db_path) as k:
-        return k.execute("SELECT COUNT(*) AS jml FROM konsultasi").fetchone()["jml"]
+        return hitung_baris(k, "konsultasi")
 
 
 def total_perbandingan(db_path=None):
     """Total baris perbandingan kasus yang pernah dihitung (untuk dashboard)."""
     with koneksi(db_path) as k:
-        return k.execute(
-            "SELECT COUNT(*) AS jml FROM konsultasi_detail"
-        ).fetchone()["jml"]
+        return hitung_baris(k, "konsultasi_detail")

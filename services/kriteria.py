@@ -6,7 +6,7 @@ kriteria yang sudah dipakai kasus dicegah, agar vektor kasus lama tidak
 tiba-tiba berubah arti.
 """
 
-from services.database import koneksi
+from services.database import hitung_baris, koneksi
 
 
 def daftar_kriteria(db_path=None):
@@ -36,7 +36,7 @@ def tambah_kriteria(kode, nama, db_path=None):
         if sama is not None:
             raise ValueError(f"Kode kriteria '{kode}' sudah dipakai.")
 
-        jumlah = k.execute("SELECT COUNT(*) AS jml FROM kriteria").fetchone()["jml"]
+        jumlah = hitung_baris(k, "kriteria")
         k.execute(
             "INSERT INTO kriteria (kode, nama, urutan) VALUES (?, ?, ?)",
             (kode, nama, jumlah + 1),
@@ -68,10 +68,9 @@ def hapus_kriteria(kriteria_id, db_path=None):
     karena nilai kasus ikut terhapus dan perbandingan menjadi tidak valid.
     """
     with koneksi(db_path) as k:
-        dipakai = k.execute(
-            "SELECT COUNT(*) AS jml FROM kasus_nilai WHERE kriteria_id = ?",
-            (kriteria_id,),
-        ).fetchone()["jml"]
+        dipakai = hitung_baris(
+            k, "kasus_nilai", "kriteria_id = ?", (kriteria_id,)
+        )
 
         if dipakai > 0:
             raise ValueError(
@@ -84,4 +83,4 @@ def hapus_kriteria(kriteria_id, db_path=None):
 
 def total_kriteria(db_path=None):
     with koneksi(db_path) as k:
-        return k.execute("SELECT COUNT(*) AS jml FROM kriteria").fetchone()["jml"]
+        return hitung_baris(k, "kriteria")

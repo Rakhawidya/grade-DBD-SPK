@@ -5,7 +5,7 @@ Halaman Beranda: gambaran singkat dan jalan masuk ke pemeriksaan.
 import streamlit as st
 
 from services import kasus, kriteria, riwayat
-from ui import tema
+from ui import bantuan, tema
 from ui.helper import format_vektor
 
 
@@ -19,21 +19,13 @@ def _persentase_terakhir(terakhir):
     return (terakhir["cosine_tertinggi"] or 0) * 100
 
 
-def _buka_menu(nama):
-    """
-    Callback tombol: dijalankan Streamlit sebelum widget dibuat ulang,
-    sehingga aman mengubah nilai radio navigasi.
-    """
-    st.session_state["halaman_tujuan"] = nama
-
-
 def _tampilkan_hero():
     """Area pembuka: satu ajakan jelas, satu panel ringkasan."""
     with st.container(border=True):
-        kiri, kanan = st.columns([1.65, 1], gap="large")
+        kiri, kanan = st.columns([1, 1], gap="large")
         with kiri:
+            tema.kicker("Mulai dari sini")
             st.markdown(
-                '<div class="card-kicker">Mulai dari sini</div>'
                 '<div class="hero-title">Periksa gejala, pahami kemungkinannya.</div>'
                 '<p class="hero-copy">Pilih keluhan yang Anda rasakan. Sistem akan '
                 "mencari kasus paling mirip dan menunjukkan rekomendasi awal "
@@ -43,7 +35,7 @@ def _tampilkan_hero():
             st.button(
                 "Mulai Pemeriksaan",
                 type="primary",
-                on_click=_buka_menu,
+                on_click=bantuan.buka_menu,
                 args=("Cek Gejala",),
             )
             st.caption("Berlangsung langsung di aplikasi ini, tanpa pendaftaran.")
@@ -56,61 +48,47 @@ def _tampilkan_hero():
                     ("Kasus pembanding", kasus.total_kasus()),
                     ("Pemeriksaan tercatat", riwayat.total_konsultasi()),
                     ("Metode", "Cosine Similarity manual"),
-                ])
+                ], gelap=True)
                 + "</div>",
                 unsafe_allow_html=True,
             )
 
 
-def _tampilkan_ringkasan(persentase):
-    kol1, kol2, kol3, kol4 = st.columns(4)
-    kol1.metric("Pemeriksaan tercatat", riwayat.total_konsultasi())
-    kol2.metric("Kasus pembanding", kasus.total_kasus())
-    kol3.metric("Gejala terdaftar", kriteria.total_kriteria())
-    kol4.metric("Kemiripan terakhir", f"{round(persentase, 1)} %")
+def _tampilkan_ringkasan(terakhir, persentase):
+    nilai_terakhir = "—" if terakhir is None else f"{round(persentase, 1)} %"
+    tema.stat_strip([
+        ("Pemeriksaan tercatat", riwayat.total_konsultasi(), "catatan tersimpan"),
+        ("Kasus pembanding", kasus.total_kasus(), "kasus pembanding aktif"),
+        ("Gejala terdaftar", kriteria.total_kriteria(), "gejala yang dapat dipilih"),
+        ("Kemiripan terakhir", nilai_terakhir, "dari pemeriksaan terbaru"),
+    ])
 
 
 def _tampilkan_hasil_terakhir(terakhir, detail):
+    # Panel hanya berisi dua kolom supaya ukurannya sama dengan panel lain.
+    # Ringkasan peringkat diletakkan di bawah panel, bukan di dalamnya.
     with st.container(border=True):
-        kol_kiri, kol_kanan = st.columns([1, 1.6], gap="large")
+        kol_kiri, kol_kanan = st.columns([1, 1], gap="large")
         with kol_kiri:
+            persentase, nama_acuan = bantuan.persentase_dari_catatan(terakhir, detail)
             if len(detail) > 0:
-                terbaik = detail[0]
-                nama_acuan = f"ID {terbaik['kasus_id']} — {terbaik['nama_kasus']}"
-                keterangan = f"Cosine {round(terbaik['cosine'], 4)}"
-                persentase = terbaik["persentase"]
+                keterangan = f"Cosine {round(detail[0]['cosine'], 4)}"
             else:
-                nama_acuan = f"ID {terakhir['kasus_acuan_id']}"
                 keterangan = "Detail tidak tersedia"
-                persentase = (terakhir["cosine_tertinggi"] or 0) * 100
             tema.gauge(persentase, nama_acuan, keterangan)
         with kol_kanan:
-            st.markdown(
-                '<div class="card-kicker">Pemeriksaan terakhir</div>',
-                unsafe_allow_html=True,
-            )
+            tema.kicker("Pemeriksaan terakhir")
             tema.judul_kartu(terakhir["nama_kasus_baru"])
-            st.markdown(
-                tema.meta_rows([
-                    ("Solusi akhir", terakhir["solusi_final"]),
-                    ("Vektor input", format_vektor(terakhir["vektor_baru"])),
-                    ("Dicatat", terakhir["dibuat_pada"]),
-                ]),
-                unsafe_allow_html=True,
-            )
-
-        if len(detail) > 0:
-            st.markdown('<hr class="hairline">', unsafe_allow_html=True)
-            st.write("**Tiga kasus terdekat**")
-            tema.peringkas([
-                {
-                    "peringkat": d["peringkat"],
-                    "nama": d["nama_kasus"],
-                    "cosine": d["cosine"],
-                    "persentase": d["persentase"],
-                }
-                for d in detail[:3]
+            bantuan.panel_meta([
+                ("Solusi akhir", terakhir["solusi_final"]),
+                ("Vektor input", format_vektor(terakhir["vektor_baru"])),
+                ("Dicatat", terakhir["dibuat_pada"]),
             ])
+
+    if len(detail) > 0:
+        tema.pemisah()
+        tema.kicker("Tiga kasus terdekat")
+        tema.peringkas(bantuan.peringkas_dari_hasil(detail, kunci_nama="nama_kasus"))
 
 
 def _tampilkan_riwayat_singkat():
@@ -121,11 +99,7 @@ def _tampilkan_riwayat_singkat():
     baris = []
     for k in daftar[:5]:
         detail = riwayat.detail_konsultasi(k["id"])
-        persentase = (
-            detail[0]["persentase"]
-            if detail
-            else (k["cosine_tertinggi"] or 0) * 100
-        )
+        persentase = bantuan.persentase_dari_catatan(k, detail)[0]
         baris.append({
             "id": k["id"],
             "nama": k["nama_kasus_baru"],
@@ -144,26 +118,32 @@ def tampilkan():
         "Beranda",
         "Periksa gejala berdasarkan kasus yang sudah tercatat. Mulai pemeriksaan "
         "baru atau lihat hasil sebelumnya.",
-        eyebrow="CEKDBD",
+        eyebrow="Ringkasan sistem",
     )
     _tampilkan_hero()
 
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
     tema.quick_steps()
 
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
     terakhir = riwayat.konsultasi_terakhir()
     persentase = _persentase_terakhir(terakhir)
-    _tampilkan_ringkasan(persentase)
+    _tampilkan_ringkasan(terakhir, persentase)
 
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
 
     if terakhir is None:
         tema.bagian("01", "Hasil Terakhir", "Belum ada pemeriksaan yang tercatat.")
         tema.kosong(
             "Belum ada hasil",
             "Mulai pemeriksaan pertama untuk melihat perbandingan kasus di sini.",
-            "Gunakan tombol Mulai Pemeriksaan di bagian atas halaman.",
+        )
+        st.button(
+            "Mulai Pemeriksaan",
+            key="mulai_dari_hasil_kosong",
+            type="primary",
+            on_click=bantuan.buka_menu,
+            args=("Cek Gejala",),
         )
     else:
         tema.bagian("01", "Hasil Terakhir", "Ringkasan pemeriksaan paling baru.")
@@ -172,7 +152,7 @@ def tampilkan():
             riwayat.detail_konsultasi(terakhir["id"]),
         )
 
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
     tema.bagian(
         "02",
         "Cara Kerja Sistem",
@@ -180,12 +160,12 @@ def tampilkan():
     )
     tema.flow_cards()
 
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
     _tampilkan_riwayat_singkat()
 
     if riwayat.total_konsultasi() > 0:
         st.button(
             "Lihat Semua Riwayat",
-            on_click=_buka_menu,
+            on_click=bantuan.buka_menu,
             args=("Riwayat",),
         )

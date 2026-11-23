@@ -16,7 +16,7 @@ from services import kasus as svc_kasus
 from services import kriteria as svc_kriteria
 from services import riwayat as svc_riwayat
 from services import validasi
-from ui import tema
+from ui import bantuan, tema
 from ui.helper import (
     baris_tabel_perbandingan,
     format_rincian_dot,
@@ -90,58 +90,39 @@ def _proses_retrieve(nilai, nama):
     return True
 
 
-def _tampilkan_hasil(hasil_cbr):
-    """Panel hasil utama: persentase, kasus acuan, dan rekomendasi awal."""
-    tema.bagian(
-        "03",
-        "Hasil Pemeriksaan",
-        "Dibandingkan dengan seluruh kasus yang tersimpan.",
+def _tampilkan_gauge_hasil(rekomendasi):
+    """Gauge kemiripan kasus terdekat (kolom kiri panel hasil)."""
+    tema.gauge(
+        rekomendasi["persentase"],
+        f"ID {rekomendasi['kasus_id']} — {rekomendasi['nama']}",
+        f"Cosine Similarity {round(rekomendasi['cosine'], 4)}",
     )
 
-    rekomendasi = hasil_cbr["rekomendasi"]
-    if rekomendasi is None:
-        st.warning("Tidak ada kasus pembanding, sehingga rekomendasi tidak tersedia.")
-        return
 
-    with st.container(border=True):
-        kol_kiri, kol_kanan = st.columns([1, 1.8], gap="large")
-        with kol_kiri:
-            tema.gauge(
-                rekomendasi["persentase"],
-                f"ID {rekomendasi['kasus_id']} — {rekomendasi['nama']}",
-                f"Cosine Similarity {round(rekomendasi['cosine'], 4)}",
-            )
-        with kol_kanan:
-            st.markdown('<div class="card-kicker">Rekomendasi awal</div>', unsafe_allow_html=True)
-            tema.judul_kartu(rekomendasi["solusi"])
-            st.markdown(
-                tema.meta_rows([
-                    ("Kasus pembanding", rekomendasi["nama"]),
-                    ("ID kasus", rekomendasi["kasus_id"]),
-                    ("Tingkat kemiripan", f"{round(rekomendasi['persentase'], 2)} %"),
-                ]),
-                unsafe_allow_html=True,
-            )
-            st.caption(
-                "Nilai ini dihitung dari dot product dan panjang kedua vektor. "
-                "Rinciannya dapat dibuka di bawah."
-            )
+def _tampilkan_rekomendasi_awal(rekomendasi):
+    """Solusi dan angka pendukung rekomendasi (kolom kanan panel hasil)."""
+    tema.kicker("Rekomendasi awal")
+    tema.judul_kartu(rekomendasi["solusi"])
+    bantuan.panel_meta([
+        ("Kasus pembanding", rekomendasi["nama"]),
+        ("ID kasus", rekomendasi["kasus_id"]),
+        ("Tingkat kemiripan", f"{round(rekomendasi['persentase'], 2)} %"),
+    ])
+    st.caption(
+        "Nilai ini dihitung dari dot product dan panjang kedua vektor. "
+        "Rinciannya dapat dibuka di bawah."
+    )
 
+
+def _tampilkan_rincian_hasil(hasil_cbr):
+    """Catatan, ringkasan 3 kasus, dan langkah perhitungan lengkap."""
     tema.catatan(
         "Setiap gejala bernilai 1 bila dicentang dan 0 bila tidak. Nilai itulah "
         "yang dibandingkan dengan vektor kasus yang tersimpan."
     )
 
-    st.caption("Tiga kasus pembanding terdekat")
-    tema.peringkas([
-        {
-            "peringkat": h["peringkat"],
-            "nama": h["nama"],
-            "cosine": h["cosine"],
-            "persentase": h["persentase"],
-        }
-        for h in hasil_cbr["hasil"][:3]
-    ])
+    tema.kicker("Tiga kasus terdekat")
+    tema.peringkas(bantuan.peringkas_dari_hasil(hasil_cbr["hasil"]))
 
     with st.expander("Lihat langkah perhitungan"):
         st.write(f"**Vektor gejala Anda:** `{format_vektor(hasil_cbr['vektor_baru'])}`")
@@ -170,8 +151,41 @@ def _tampilkan_hasil(hasil_cbr):
             )
 
 
+def _tampilkan_hasil(hasil_cbr):
+    """Panel hasil utama: persentase, kasus acuan, dan rekomendasi awal."""
+    tema.bagian(
+        "03",
+        "Hasil Pemeriksaan",
+        "Dibandingkan dengan seluruh kasus yang tersimpan.",
+    )
+
+    rekomendasi = hasil_cbr["rekomendasi"]
+    if rekomendasi is None:
+        st.warning("Tidak ada kasus pembanding, sehingga rekomendasi tidak tersedia.")
+        return
+
+    with st.container(border=True):
+        kol_kiri, kol_kanan = st.columns([1, 1], gap="large")
+        with kol_kiri:
+            _tampilkan_gauge_hasil(rekomendasi)
+        with kol_kanan:
+            _tampilkan_rekomendasi_awal(rekomendasi)
+
+    _tampilkan_rincian_hasil(hasil_cbr)
+
+
 def _tampilkan_revise(hasil_cbr):
     """Form peninjauan: terima rekomendasi atau tuliskan koreksi."""
+    # Konfirmasi diletakkan di atas panel supaya hasil aksi terlihat tanpa scroll.
+    if "revise_cbr" in st.session_state:
+        hasil = st.session_state["revise_cbr"]
+        if hasil["sumber"] == "rekomendasi":
+            st.success(f"Rekomendasi diterima: **{hasil['solusi_final']}**")
+        else:
+            st.success(f"Koreksi tersimpan: **{hasil['solusi_final']}**")
+        if hasil["catatan"]:
+            st.caption(f"Catatan: {hasil['catatan']}")
+
     tema.bagian(
         "04",
         "Tinjau Rekomendasi",
@@ -184,12 +198,9 @@ def _tampilkan_revise(hasil_cbr):
         return
 
     with st.container(border=True):
-        kol_info, kol_form = st.columns([1, 1.6], gap="large")
+        kol_info, kol_form = st.columns([1, 1], gap="large")
         with kol_info:
-            st.markdown(
-                '<div class="card-kicker">Keputusan Anda</div>',
-                unsafe_allow_html=True,
-            )
+            tema.kicker("Keputusan Anda")
             st.write(
                 "Bandingkan rekomendasi sistem dengan kondisi pasien. Anda bisa "
                 "menerimanya apa adanya atau menuliskan solusi akhir yang lebih tepat."
@@ -208,25 +219,56 @@ def _tampilkan_revise(hasil_cbr):
                     placeholder="Tuliskan alasan bila ada koreksi",
                     height=76,
                 )
-                disubmit = st.form_submit_button("Simpan Koreksi")
+                disubmit = st.form_submit_button("Simpan Koreksi", type="primary")
 
     if disubmit:
         st.session_state["revise_cbr"] = cbr.revise(rekomendasi, solusi_user, catatan)
         st.session_state.pop("retain_selesai", None)
         st.rerun()
 
-    if "revise_cbr" in st.session_state:
-        hasil = st.session_state["revise_cbr"]
-        if hasil["sumber"] == "rekomendasi":
-            st.success(f"Rekomendasi diterima: **{hasil['solusi_final']}**")
-        else:
-            st.success(f"Koreksi tersimpan: **{hasil['solusi_final']}**")
-        if hasil["catatan"]:
-            st.caption(f"Catatan: {hasil['catatan']}")
+
+def _simpan_hasil(hasil_cbr, hasil_revise, rekomendasi):
+    """Menulis kasus baru + riwayat, lalu memulai ulang alur tampilan."""
+    payload = cbr.retain(
+        hasil_cbr["vektor_baru"],
+        hasil_cbr["nilai"],
+        hasil_cbr["nama"],
+        hasil_revise,
+        rekomendasi,
+    )
+
+    kasus_id = svc_kasus.tambah_kasus(
+        payload["nama"],
+        payload["solusi_final"],
+        f"Hasil pemeriksaan; acuan kasus ID {payload['kasus_acuan_id']} "
+        f"(cosine {round(payload['cosine'], 4)})",
+        payload["nilai"],
+    )
+    svc_riwayat.simpan_konsultasi({
+        "nama_kasus_baru": payload["nama"],
+        "vektor_baru": payload["vektor"],
+        "kasus_acuan_id": payload["kasus_acuan_id"],
+        "cosine_tertinggi": payload["cosine"],
+        "solusi_rekomendasi": rekomendasi["solusi"],
+        "solusi_final": payload["solusi_final"],
+        "sumber_solusi": payload["sumber_solusi"],
+        "catatan": payload["catatan"],
+        "detail": hasil_cbr["hasil"],
+    })
+
+    st.session_state["retain_selesai"] = kasus_id
+    st.rerun()
 
 
 def _tampilkan_retain(hasil_cbr):
     """Menyimpan kasus baru dan riwayat setelah hasil ditinjau."""
+    sudah_simpan = "retain_selesai" in st.session_state
+    if sudah_simpan:
+        st.success(
+            f"Hasil pemeriksaan tersimpan. Kasus baru mendapat ID "
+            f"{st.session_state['retain_selesai']}."
+        )
+
     tema.bagian(
         "05",
         "Simpan Hasil",
@@ -239,62 +281,21 @@ def _tampilkan_retain(hasil_cbr):
 
     hasil_revise = st.session_state["revise_cbr"]
     rekomendasi = hasil_cbr["rekomendasi"]
-    sudah_simpan = "retain_selesai" in st.session_state
 
     with st.container(border=True):
-        kol_info, kol_aksi = st.columns([1.6, 1], gap="large")
+        kol_info, kol_aksi = st.columns([1, 1], gap="large")
         with kol_info:
-            st.markdown(
-                '<div class="card-kicker">Yang akan disimpan</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                tema.meta_rows([
-                    ("Pasien", hasil_cbr["nama"]),
-                    ("Solusi akhir", hasil_revise["solusi_final"]),
-                    ("Sumber solusi", hasil_revise["sumber"]),
-                ]),
-                unsafe_allow_html=True,
-            )
+            tema.kicker("Yang akan disimpan")
+            bantuan.panel_meta([
+                ("Pasien", hasil_cbr["nama"]),
+                ("Solusi akhir", hasil_revise["solusi_final"]),
+                ("Sumber solusi", hasil_revise["sumber"]),
+            ])
         with kol_aksi:
             if not sudah_simpan and st.button(
                 "Simpan Hasil Pemeriksaan", type="primary"
             ):
-                payload = cbr.retain(
-                    hasil_cbr["vektor_baru"],
-                    hasil_cbr["nilai"],
-                    hasil_cbr["nama"],
-                    hasil_revise,
-                    rekomendasi,
-                )
-
-                kasus_id = svc_kasus.tambah_kasus(
-                    payload["nama"],
-                    payload["solusi_final"],
-                    f"Hasil pemeriksaan; acuan kasus ID {payload['kasus_acuan_id']} "
-                    f"(cosine {round(payload['cosine'], 4)})",
-                    payload["nilai"],
-                )
-                svc_riwayat.simpan_konsultasi({
-                    "nama_kasus_baru": payload["nama"],
-                    "vektor_baru": payload["vektor"],
-                    "kasus_acuan_id": payload["kasus_acuan_id"],
-                    "cosine_tertinggi": payload["cosine"],
-                    "solusi_rekomendasi": rekomendasi["solusi"],
-                    "solusi_final": payload["solusi_final"],
-                    "sumber_solusi": payload["sumber_solusi"],
-                    "catatan": payload["catatan"],
-                    "detail": hasil_cbr["hasil"],
-                })
-
-                st.session_state["retain_selesai"] = kasus_id
-                st.rerun()
-
-    if sudah_simpan:
-        st.success(
-            f"Hasil pemeriksaan tersimpan. Kasus baru mendapat ID "
-            f"{st.session_state['retain_selesai']}."
-        )
+                _simpan_hasil(hasil_cbr, hasil_revise, rekomendasi)
 
 
 _TAHAP_DATA = "Data"
@@ -324,10 +325,7 @@ def _mulai_baru():
 def _tampilkan_data():
     """Langkah 1: identitas pasien. Satu pertanyaan utama per layar."""
     with st.container(border=True):
-        st.markdown(
-            '<div class="card-kicker">Langkah 1 dari 2</div>',
-            unsafe_allow_html=True,
-        )
+        tema.kicker("Identitas pasien")
         tema.judul_kartu("Siapa yang akan diperiksa?", besar=True)
         st.caption("Nama atau kode ini dipakai sebagai label pada Riwayat.")
         st.session_state.setdefault(
@@ -340,16 +338,21 @@ def _tampilkan_data():
                 placeholder="cth: Pasien 01",
                 help="Gunakan nama atau kode yang mudah dikenali.",
             )
+            # Penanda tak terlihat: jangkar CSS agar tombol "Lanjut" memakai
+            # gaya yang sama dengan tombol "Mulai Pemeriksaan" di Beranda.
+            st.markdown(
+                '<span class="tombol-ajakan" aria-hidden="true"></span>',
+                unsafe_allow_html=True,
+            )
             disubmit = st.form_submit_button("Lanjut", type="primary")
-
-    if disubmit:
-        error = validasi.validasi_teks(nama, "Nama atau kode pasien")
-        if error:
-            st.error(error)
-        else:
-            st.session_state["nama_pasien"] = nama.strip()
-            st.session_state["tahap_konsultasi"] = _TAHAP_GEJALA
-            st.rerun()
+            if disubmit:
+                error = validasi.validasi_teks(nama, "Nama atau kode pasien")
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state["nama_pasien"] = nama.strip()
+                    st.session_state["tahap_konsultasi"] = _TAHAP_GEJALA
+                    st.rerun()
 
 
 def _tampilkan_gejala():
@@ -359,10 +362,7 @@ def _tampilkan_gejala():
     nama = st.session_state.get("nama_pasien", "")
 
     with st.container(border=True):
-        st.markdown(
-            '<div class="card-kicker">Langkah 2 dari 2</div>',
-            unsafe_allow_html=True,
-        )
+        tema.kicker("Pilih gejala")
         tema.judul_kartu("Gejala apa yang Anda rasakan?", besar=True)
         st.caption(f"Pasien: {nama}. Centang semua keluhan yang sesuai.")
 
@@ -377,8 +377,8 @@ def _tampilkan_gejala():
                 _kelompokkan_gejala(daftar_kriteria)
             ):
                 if indeks > 0:
-                    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
-                tema.grup_gejala(judul_grup)
+                    tema.pemisah()
+                tema.grup_gejala(judul_grup, len(kriteria_grup))
                 kolom_pilihan = st.columns(2)
                 for i, kr in enumerate(kriteria_grup):
                     kunci = f"gejala_{kr['kode']}"
@@ -389,16 +389,19 @@ def _tampilkan_gejala():
                     dicentang = kolom_pilihan[i % 2].checkbox(kr["nama"], key=kunci)
                     nilai[kr["kode"]] = 1 if dicentang else 0
 
-            st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+            tema.pemisah()
             submitted = st.form_submit_button("Periksa Sekarang", type="primary")
+            if submitted:
+                error = validasi.validasi_gejala_dipilih(nilai, daftar_kriteria)
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state["gejala_terpilih"] = dict(nilai)
+                    if _proses_retrieve(nilai, nama):
+                        st.session_state["tahap_konsultasi"] = _TAHAP_HASIL
+                        st.rerun()
 
         st.button("Kembali", on_click=_set_tahap, args=(_TAHAP_DATA,))
-
-    if submitted:
-        st.session_state["gejala_terpilih"] = dict(nilai)
-        if _proses_retrieve(nilai, nama):
-            st.session_state["tahap_konsultasi"] = _TAHAP_HASIL
-            st.rerun()
 
 
 def _tampilkan_hasil_utama():
@@ -411,15 +414,15 @@ def _tampilkan_hasil_utama():
         if hasil_cbr["nilai"].get(kr["kode"]) == 1
     ]
     tema.pil_ringkas(terpilih, "Gejala yang Anda pilih")
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
 
     _tampilkan_hasil(hasil_cbr)
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
     _tampilkan_revise(hasil_cbr)
-    st.markdown('<hr class="hairline">', unsafe_allow_html=True)
+    tema.pemisah()
     _tampilkan_retain(hasil_cbr)
 
-    st.divider()
+    tema.pemisah()
     kol_ubah, kol_baru = st.columns(2)
     with kol_ubah:
         st.button("Ubah Gejala", on_click=_set_tahap, args=(_TAHAP_GEJALA,))
@@ -438,13 +441,9 @@ def tampilkan():
     if tahap == _TAHAP_HASIL and "hasil_cbr" not in st.session_state:
         tahap = _TAHAP_DATA
 
-    if tahap == _TAHAP_HASIL:
-        sudah_ditinjau = (
-            "revise_cbr" in st.session_state or "retain_selesai" in st.session_state
-        )
-        tema.langkah_cbr("Hasil" if sudah_ditinjau else "Analisis")
-    else:
-        tema.langkah_cbr(tahap)
+    # Selama hasil tampil, progres dikunci di "Hasil". Bagian 04/05 yang
+    # menandai tinjau/simpan sudah diberi nomor sendiri oleh tema.bagian().
+    tema.langkah_cbr(_TAHAP_HASIL if tahap == _TAHAP_HASIL else tahap)
 
     tema.catatan(
         "Pemeriksaan ini membantu membaca kemungkinan berdasarkan kasus yang "
